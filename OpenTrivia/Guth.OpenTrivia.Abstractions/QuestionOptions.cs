@@ -1,9 +1,9 @@
 ﻿using System;
-using Guth.OpenTrivia.Client.Enums;
+using Guth.OpenTrivia.Abstractions.Enums;
 
-namespace Guth.OpenTrivia.Client
+namespace Guth.OpenTrivia.Abstractions
 {
-    public class QuestionOptionsBuilder
+    public class QuestionOptions
     {
         public int NumberOfQuestions { get; private set; } = 10;
         public QuestionDifficulty? Difficulty { get; private set; }
@@ -11,13 +11,13 @@ namespace Guth.OpenTrivia.Client
         public QuestionCategory? Category { get; private set; }
 
 
-        public QuestionOptionsBuilder WithCategory(QuestionCategory category)
+        public QuestionOptions WithCategory(QuestionCategory category)
         {
             Category = category;
             return this;
         }
 
-        public QuestionOptionsBuilder WithNumberOfQuestions(int numberOfQuestions)
+        public QuestionOptions WithNumberOfQuestions(int numberOfQuestions)
         {
             if (numberOfQuestions < 1 || numberOfQuestions > 50)
             {
@@ -27,13 +27,13 @@ namespace Guth.OpenTrivia.Client
             return this;
         }
 
-        public QuestionOptionsBuilder WithDifficulty(QuestionDifficulty difficulty)
+        public QuestionOptions WithDifficulty(QuestionDifficulty difficulty)
         {
             Difficulty = difficulty;
             return this;
         }
 
-        public QuestionOptionsBuilder WithQuestionType(QuestionType type)
+        public QuestionOptions WithQuestionType(QuestionType type)
         {
             Type = type;
             return this;

@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace Guth.OpenTrivia.Client.Enums
+namespace Guth.OpenTrivia.Abstractions.Enums
 {
     public enum QuestionDifficulty
     {

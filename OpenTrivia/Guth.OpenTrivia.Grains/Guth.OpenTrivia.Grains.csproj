@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Guth.OpenTrivia.GrainInterfaces\Guth.OpenTrivia.GrainInterfaces.csproj" />
+  </ItemGroup>
+
+</Project>

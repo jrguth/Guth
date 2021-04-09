@@ -1,6 +1,6 @@
 ﻿using RestSharp;
 
-namespace Guth.OpenTrivia.Client
+namespace Guth.OpenTrivia.Abstractions
 {
     public class OpenTriviaRequest<T>
     {

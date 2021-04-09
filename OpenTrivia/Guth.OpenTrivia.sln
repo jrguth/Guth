@@ -1,0 +1,42 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31112.23
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Guth.OpenTrivia.Client", "Guth.OpenTrivia.Client\Guth.OpenTrivia.Client\Guth.OpenTrivia.Client.csproj", "{1A4188B1-A077-40F4-A1D0-2EBA8C82705A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Guth.OpenTrivia.GrainInterfaces", "Guth.OpenTrivia.GrainInterfaces\Guth.OpenTrivia.GrainInterfaces.csproj", "{81C2DE9F-D306-4FA2-80FB-515A965F3681}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Guth.OpenTrivia.Abstractions", "Guth.OpenTrivia.Abstractions\Guth.OpenTrivia.Abstractions.csproj", "{4418882B-7E0E-4647-8338-2876CCA83AE9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Guth.OpenTrivia.Grains", "Guth.OpenTrivia.Grains\Guth.OpenTrivia.Grains.csproj", "{F601360A-D8C7-489F-8F39-A21EAD942402}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1A4188B1-A077-40F4-A1D0-2EBA8C82705A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A4188B1-A077-40F4-A1D0-2EBA8C82705A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A4188B1-A077-40F4-A1D0-2EBA8C82705A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A4188B1-A077-40F4-A1D0-2EBA8C82705A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{81C2DE9F-D306-4FA2-80FB-515A965F3681}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81C2DE9F-D306-4FA2-80FB-515A965F3681}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81C2DE9F-D306-4FA2-80FB-515A965F3681}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81C2DE9F-D306-4FA2-80FB-515A965F3681}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4418882B-7E0E-4647-8338-2876CCA83AE9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4418882B-7E0E-4647-8338-2876CCA83AE9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4418882B-7E0E-4647-8338-2876CCA83AE9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4418882B-7E0E-4647-8338-2876CCA83AE9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F601360A-D8C7-489F-8F39-A21EAD942402}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F601360A-D8C7-489F-8F39-A21EAD942402}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F601360A-D8C7-489F-8F39-A21EAD942402}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F601360A-D8C7-489F-8F39-A21EAD942402}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AB47A3C2-14CE-4829-800E-E2394B27E5DF}
+	EndGlobalSection
+EndGlobal

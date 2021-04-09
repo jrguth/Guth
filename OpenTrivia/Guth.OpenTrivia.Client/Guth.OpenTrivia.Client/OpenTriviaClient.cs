@@ -3,12 +3,12 @@ using System.Threading.Tasks;
 using System.Collections.Immutable;
 using RestSharp;
 using Newtonsoft.Json;
-using Guth.OpenTrivia.Client.Models;
-using Guth.OpenTrivia.Client.Enums;
+using Guth.OpenTrivia.Abstractions.Models;
+using Guth.OpenTrivia.Abstractions.Enums;
 
-namespace Guth.OpenTrivia.Client
+namespace Guth.OpenTrivia.Abstractions
 {
-    public class OpenTriviaClient
+    public class OpenTriviaClient : IOpenTriviaClient
     {
         private IRestClient _client;
 
@@ -19,9 +19,9 @@ namespace Guth.OpenTrivia.Client
 
         public async Task<string> GetSessionToken()
         {
-            var request = new OpenTriviaRequest<TokenResponse>("api_token.php")
+            var request = new OpenTriviaRequest<GetSessionTokenResponse>("api_token.php")
                      .AddParameter("command", "request");
-            TokenResponse response = await Execute(request);
+            GetSessionTokenResponse response = await Execute(request);
             return response.Token;
         }
 
@@ -37,19 +37,19 @@ namespace Guth.OpenTrivia.Client
 
         public async Task<ImmutableList<TriviaCategory>> GetTriviaCategories(string sessionToken = null)
         {
-            var request = new OpenTriviaRequest<TriviaCategoriesResponse>("api_category.php", sessionToken);
-            TriviaCategoriesResponse response = await Execute(request);
+            var request = new OpenTriviaRequest<GetTriviaCategoriesResponse>("api_category.php", sessionToken);
+            GetTriviaCategoriesResponse response = await Execute(request);
             return response.Categories;
         }
 
-        public async Task<ImmutableList<TriviaQuestion>> GetTriviaQuestions(Action<QuestionOptionsBuilder> configureOptions = null, string sessionToken = null)
+        public async Task<ImmutableList<TriviaQuestion>> GetTriviaQuestions(Action<QuestionOptions> configureOptions = null, string sessionToken = null)
         {
-            var optionsBuilder = new QuestionOptionsBuilder();
+            var optionsBuilder = new QuestionOptions();
             if (configureOptions != null)
             {
                 configureOptions(optionsBuilder);
             }
-                
+
             var request = new OpenTriviaRequest<GetTriviaQuestionsResponse>("api.php", sessionToken)
                 .AddParameter("amount", optionsBuilder.NumberOfQuestions)
                 .AddParameterIfNotNull("category", (int?)optionsBuilder.Category)
