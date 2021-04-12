@@ -1,4 +1,5 @@
 ﻿using static System.Console;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System;
@@ -18,19 +19,38 @@ namespace Guth.OpenTrivia.ConsoleApp
         private static string name;
         private static IClusterClient _cluster;
         private static IPlayerGrain _player;
+        private static IGameGrain _game;
         static async Task Main(string[] args)
         {
             await ConnectToCluster();
-            _player = _cluster.GetGrain<IPlayerGrain>(Guid.Empty);
+            _player = _cluster.GetGrain<IPlayerGrain>(Guid.NewGuid());
             await _player.SetName(PrintAndReceiveInput("Enter your name: "));
 
             if (PrintAndReceiveInput("Enter 1 to start a new OpenTrivia game, anything else to connect to an existing one: ") == "1")
             {
-                await CreateGame();
+                _game = await CreateGame();
+                PrintAndReceiveInput("Press enter to start...");
+                await _game.Start();
+                bool isComplete = false;
+                try
+                {
+                    do
+                    {
+                        isComplete = await _game.StartNextRound();
+                    } while (!isComplete);
+                    ReadLine();
+                }
+                catch (Exception e)
+                {
+                    WriteLine($"EXCEPTION:\n{e}");
+                    ReadLine();
+                }
             }
             else
             {
-
+                _game = _cluster.GetGrain<IGameGrain>(new Guid(PrintAndReceiveInput("Enter connection id of game: ")));
+                await _player.JoinGame(_game);
+                ReadLine();
             }
         }
 
@@ -51,13 +71,24 @@ namespace Guth.OpenTrivia.ConsoleApp
                 })
                 .ConfigureApplicationParts(_ => _.AddApplicationPart(typeof(IPlayerGrain).Assembly).WithReferences().WithCodeGeneration())
                 .Build();
-            await _cluster.Connect();
+            int retries = 0;
+            await _cluster.Connect(exception =>
+            {
+                retries += 1;
+                if (retries >= 3)
+                {
+                    return Task.FromResult(false);
+                }
+                Thread.Sleep(3 * 1000);
+                return Task.FromResult(true);
+            });
         }
 
-        private async static Task CreateGame()
+        private async static Task<IGameGrain> CreateGame()
         {
-            Guid gameGuid = await _player.CreateGame(new GameOptions(), ConfigureQuestionOptions());
-            WriteLine($"Game created with id: {gameGuid}");
+            IGameGrain gameGrain = await _player.CreateGame(new GameOptions(), ConfigureQuestionOptions());
+            WriteLine($"Game created with id: {gameGrain.GetPrimaryKey()}");
+            return gameGrain;
         }
 
         private static QuestionOptions ConfigureQuestionOptions()

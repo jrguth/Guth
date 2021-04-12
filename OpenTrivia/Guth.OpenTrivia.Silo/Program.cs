@@ -22,7 +22,7 @@ namespace Guth.OpenTrivia.Silo
                 .ConfigureLogging(logging => logging
                     .AddConsole()
                     .AddFilter("Orleans.Runtime.Management.ManagementGrain", LogLevel.Warning)
-                    .AddFilter("Orleans.Runtime.SiloControl", LogLevel.Warning))
+                    .AddFilter("Orleans.Runtime.*", LogLevel.Information))
                 .ConfigureServices(services =>
                 {
                     services.AddTransient<IOpenTriviaClient, OpenTriviaClient>();

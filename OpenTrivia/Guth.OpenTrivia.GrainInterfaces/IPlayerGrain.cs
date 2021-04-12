@@ -13,9 +13,9 @@ namespace Guth.OpenTrivia.GrainInterfaces
         Task<Player> GetPlayer();
         Task<Game> GetCurrentGame();
         Task SetName(string name);
-        Task<Guid> CreateGame(GameOptions gameOptions, QuestionOptions questionOptions);
+        Task<IGameGrain> CreateGame(GameOptions gameOptions, QuestionOptions questionOptions);
         Task JoinGame(IGameGrain game);
         Task LeaveGame(IGameGrain game);
-        Task<string> AnswerQuestion(Round round, CancellationToken cancellationToken = default);
+        Task<string> AnswerQuestion(Round round);
     }
 }

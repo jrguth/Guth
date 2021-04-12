@@ -48,8 +48,8 @@ namespace Guth.OpenTrivia.Client
             var request = new OpenTriviaRequest<GetTriviaQuestionsResponse>("api.php", sessionToken)
                 .AddParameter("amount", questionOptions.NumberOfQuestions)
                 .AddParameterIfNotNull("category", (int?)questionOptions.Category)
-                .AddParameterIfNotNull("difficulty", questionOptions.Difficulty)
-                .AddParameterIfNotNull("type", questionOptions.Type);
+                .AddParameterIfNotNull("difficulty", questionOptions.Difficulty.ToString().ToLower())
+                .AddParameterIfNotNull("type", questionOptions.Type == Abstractions.Enums.QuestionType.MultipleChoice ? "multiple" : "boolean");
 
             GetTriviaQuestionsResponse response = await Execute(request);
             return response.Questions;

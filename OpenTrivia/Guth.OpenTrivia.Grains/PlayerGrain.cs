@@ -25,6 +25,12 @@ namespace Guth.OpenTrivia.Grains
             _grainFactory = grainFactory;
         }
 
+        public override async Task OnActivateAsync()
+        {
+            State.Key = this.GetPrimaryKey();
+            await base.OnActivateAsync();
+        }
+
         public async Task<Player> GetPlayer() => await Task.FromResult(State);
         public async Task<Game> GetCurrentGame() => await Task.FromResult(_game);
         public Task SetName (string name)
@@ -33,12 +39,12 @@ namespace Guth.OpenTrivia.Grains
             return Task.CompletedTask;
         }
 
-        public async Task<Guid> CreateGame(GameOptions gameOptions, QuestionOptions questionOptions)
+        public async Task<IGameGrain> CreateGame(GameOptions gameOptions, QuestionOptions questionOptions)
         {
             _currentGame = _grainFactory.GetGrain<IGameGrain>(Guid.NewGuid());
             await JoinGame(_currentGame);
             await _currentGame.ConfigureOptions(gameOptions, questionOptions);
-            return await Task.FromResult(_currentGame.GetPrimaryKey());
+            return await Task.FromResult(_currentGame);
         }
 
         public async Task JoinGame(IGameGrain game)
@@ -57,12 +63,8 @@ namespace Guth.OpenTrivia.Grains
             }
         }
 
-        public async Task<string> AnswerQuestion(Round round, CancellationToken cancellationToken = default)
+        public async Task<string> AnswerQuestion(Round round)
         {
-            if (cancellationToken.IsCancellationRequested)
-            {
-                await Task.FromCanceled<string>(cancellationToken);
-            }
             _logger.LogInformation("Player {0} answering next question: {1}", this.GetPrimaryKey(), round.Question);
             int selection = new Random().Next(0, round.Choices.Length - 1);
             string choice = round.Choices[selection];
@@ -73,6 +75,7 @@ namespace Guth.OpenTrivia.Grains
         public void UpdateGame(Game game)
         {
             _game = game;
+            Console.WriteLine("Game updated!");
             _logger.LogInformation("Game updated for player {0}", this.GetPrimaryKey());
         }
     }

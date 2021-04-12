@@ -2,8 +2,9 @@ using NUnit.Framework;
 using System.Threading.Tasks;
 using System.Collections.Immutable;
 using System.Linq;
-using Guth.OpenTrivia.Client.Enums;
-using Guth.OpenTrivia.Client.Models;
+using Guth.OpenTrivia.Abstractions;
+using Guth.OpenTrivia.Abstractions.Enums;
+using Guth.OpenTrivia.Abstractions.Models;
 
 namespace Guth.OpenTrivia.Client.Tests.Integration
 {
@@ -35,7 +36,7 @@ namespace Guth.OpenTrivia.Client.Tests.Integration
         public async Task GetTriviaQuestions_NoCustomOptions_ReturnsTriviaQuestions()
         {
             var client = new OpenTriviaClient();
-            var questions = await client.GetTriviaQuestions();
+            var questions = await client.GetTriviaQuestions(new QuestionOptions());
             Assert.That(questions, Is.Not.Null);
             Assert.That(questions, Is.InstanceOf<ImmutableList<TriviaQuestion>>());
             Assert.That(questions.Any(), Is.True);
@@ -45,8 +46,10 @@ namespace Guth.OpenTrivia.Client.Tests.Integration
         public async Task GetTriviaQuestions_WithOneQuestion_WithGeneralKnowledgeCategory_ReturnsOneGeneralKnowledgeQuestion()
         {
             var client = new OpenTriviaClient();
-            var questions = await client.GetTriviaQuestions(options => options
+            var questions = await client.GetTriviaQuestions(new QuestionOptions()
                 .WithCategory(QuestionCategory.GeneralKnowledge)
+                .WithDifficulty(QuestionDifficulty.Easy)
+                .WithQuestionType(QuestionType.MultipleChoice)
                 .WithNumberOfQuestions(1));
             Assert.That(questions, Is.Not.Null);
             Assert.That(questions.Count, Is.EqualTo(1));

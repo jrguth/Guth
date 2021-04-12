@@ -7,19 +7,19 @@ namespace Guth.OpenTrivia.GrainInterfaces
 {
     public class Game
     {
-        private ImmutableStack<TriviaQuestion> _questions;
+        private Stack<TriviaQuestion> _questions;
         public Guid Key { get; set; }
-        public ImmutableHashSet<Player> Players { get; set; } = ImmutableHashSet.Create<Player>();
-        public ImmutableStack<TriviaQuestion> Questions
+        public HashSet<Player> Players { get; set; } = new HashSet<Player>();
+        public Stack<TriviaQuestion> Questions
         {
             get => _questions;
             set
             {
-                TotalRounds = value.ToImmutableArray().Length;
+                TotalRounds = value.Count;
                 _questions = value;
             }
         }
-        public bool Completed => Questions.IsEmpty;
+        public bool IsComplete => Questions.Count == 0;
         public int RoundNumber { get; set; } = 1;
         public int TotalRounds { get; private set; }
     }

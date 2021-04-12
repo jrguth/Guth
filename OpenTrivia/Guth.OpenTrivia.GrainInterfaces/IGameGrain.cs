@@ -13,6 +13,6 @@ namespace Guth.OpenTrivia.GrainInterfaces
         Task Start();
         Task AddPlayer(IPlayerGrain player);
         Task RemovePlayer(IPlayerGrain player);
-        Task NextRound(int bufferSeconds = 3);
+        Task<bool> StartNextRound(int bufferSeconds = 3);
     }
 }

@@ -34,9 +34,11 @@ namespace Guth.OpenTrivia.Grains
 
         public override async Task OnActivateAsync()
         {
+            _logger.LogInformation("Activating new Game grain with id {0}", this.GetPrimaryKey());
             _subscriptionManager = new ObserverSubscriptionManager<IGameObserver>();
             _players = ImmutableHashSet.Create<IPlayerGrain>();
             _openTriviaSessionToken = await _openTriviaClient.GetSessionToken();
+            _logger.LogInformation("Obtained open trivia session token: {0}", _openTriviaSessionToken);
             await base.OnActivateAsync();
         }
 
@@ -49,8 +51,10 @@ namespace Guth.OpenTrivia.Grains
 
         public async Task Start()
         {
+            _logger.LogInformation("Starting game...");
             ImmutableList<TriviaQuestion> questions = await _openTriviaClient.GetTriviaQuestions(_questionOptions, _openTriviaSessionToken);
-            State.Questions = ImmutableStack.Create(questions.ToArray());
+            State.Questions = new Stack<TriviaQuestion>(questions.ToArray());
+            _logger.LogInformation("Cached {0} trivia questions", questions.Count);
             await _subscriptionManager.Notify(observer => observer.UpdateGame(State));
         }
 
@@ -58,7 +62,7 @@ namespace Guth.OpenTrivia.Grains
         {
             Player p = await player.GetPlayer();
             State.Players.Add(p);
-            _subscriptionManager.AddSubscriber(player);
+            _players = _players.Add(player);
             await _subscriptionManager.Notify(observer => observer.UpdateGame(State));
         }
 
@@ -66,32 +70,43 @@ namespace Guth.OpenTrivia.Grains
         {
             Player p = await player.GetPlayer();
             State.Players.Remove(p);
+            _players = _players.Remove(player);
             _subscriptionManager.RemoveSubscriber(player);
             await _subscriptionManager.Notify(observer => observer.UpdateGame(State));
         }
 
-        public async Task NextRound(int bufferSeconds = 3)
+        public async Task<bool> StartNextRound(int bufferSeconds = 3)
         {
-            if (!State.Completed)
+            if (!State.IsComplete)
             {
-                State.RoundNumber++;
-                State.Questions.Pop(out TriviaQuestion question); 
+                State.RoundNumber = State.RoundNumber++;
+                _logger.LogInformation("Starting round {0} of {1}", State.RoundNumber, State.TotalRounds);
+                TriviaQuestion question = State.Questions.Pop();
+                _logger.LogInformation("Next question: {0}", question.Question);
+
                 var choices = question.IncorrectAnswers.Insert(new Random().Next(0, question.IncorrectAnswers.Length), question.CorrectAnswer);
                 var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(_gameOptions.SecondsPerRound + bufferSeconds));
-                _logger.LogInformation("Asking next question: '{0}'", question.Question);
-                await Task.WhenAll(_players.Select(player => new Task(async () =>
+                _logger.LogInformation("Number of players: {0}", _players.Count);
+                IEnumerable<Task> tasks = _players.Select(player =>
                 {
-                    string answer = await player.AnswerQuestion(new Round(question.Question, bufferSeconds, choices), cancellation.Token);
-                    _logger.LogInformation("Received answer from player {0}: ", player.GetPrimaryKey(), answer == question.CorrectAnswer ? "Correct!" : "Incorrect!");
-
-                    if (answer == question.CorrectAnswer)
+                    var task = new Task(async () =>
                     {
-                        State.Players.First(p => p.Key == player.GetPrimaryKey()).Points += 1;
-                    }
-                })));
-                await _subscriptionManager.Notify(observer => observer.UpdateGame(State));
+                        _logger.LogInformation("Asking question to player {0}", player.GetPrimaryKey());
+                        string answer = await player.AnswerQuestion(new Round(question.Question, bufferSeconds, choices));
+                        _logger.LogInformation("Received answer from player {0}: {1}", player.GetPrimaryKey(), answer);
+
+                        if (answer == question.CorrectAnswer)
+                        {
+                            State.Players.First(p => p.Key == player.GetPrimaryKey()).Points += 1;
+                        }
+                    });
+                    task.Start();
+                    return task;
+                });
+
+                await Task.WhenAll(tasks);
             }
-           
+            return State.IsComplete;
         }
     }
 }
