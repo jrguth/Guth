@@ -1,50 +1,79 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Collections.Immutable;
+using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Streams;
 using Guth.OpenTrivia.GrainInterfaces;
+using Guth.OpenTrivia.Abstractions;
 using Guth.OpenTrivia.Abstractions.Models;
 
 namespace Guth.OpenTrivia.Grains
 {
     public class PlayerGrain : Grain<Player>, IPlayerGrain
     {
-        private IGameSessionGrain _game;
+        private ILogger<IPlayerGrain> _logger;
+        private IGameGrain _currentGame;
+        private IGrainFactory _grainFactory;
 
-        public Task<IGameSessionGrain> CreateGame()
+        private Game _game;
+
+        public PlayerGrain(ILogger<IPlayerGrain> logger, IGrainFactory grainFactory)
         {
-            if (_game != null)
-            {
-                LeaveGame();
-            }
-            _game = GrainFactory.GetGrain<IGameSessionGrain>(Guid.NewGuid());
-            return Task.FromResult(_game);
+            _logger = logger;
+            _grainFactory = grainFactory;
         }
 
-        public Task<IGameSessionGrain> GetCurrentGame()
-            => Task.FromResult(_game);
-
-        public async Task JoinGame(Guid gameKey)
+        public async Task<Player> GetPlayer() => await Task.FromResult(State);
+        public async Task<Game> GetCurrentGame() => await Task.FromResult(_game);
+        public Task SetName (string name)
         {
-            var game = GrainFactory.GetGrain<IGameSessionGrain>(gameKey);
-            await game.AddPlayer(State);
-            _game = game;
-            IAsyncStream<TriviaQuestion> questionStream = 
-                GetStreamProvider(Constants.QuestionStreamProvider)
-                .GetStream<TriviaQuestion>(_game.GetPrimaryKey(), Constants.QuestionStreamNamespace);
-            await questionStream.SubscribeAsync(async (question, token) => await AnswerQuestion(question));
-        }
-
-        public Task LeaveGame()
-        {
-            _game.RemovePlayer(State);
-            _game = null;
+            State.Name = name;
             return Task.CompletedTask;
         }
 
-        public async Task AnswerQuestion(TriviaQuestion question)
+        public async Task<Guid> CreateGame(GameOptions gameOptions, QuestionOptions questionOptions)
         {
-            // hook up service layer to obtain answer
+            _currentGame = _grainFactory.GetGrain<IGameGrain>(Guid.NewGuid());
+            await JoinGame(_currentGame);
+            await _currentGame.ConfigureOptions(gameOptions, questionOptions);
+            return await Task.FromResult(_currentGame.GetPrimaryKey());
+        }
+
+        public async Task JoinGame(IGameGrain game)
+        {
+            await game.AddPlayer(this);
+            _currentGame = game;
+            _logger.LogInformation("Player {0} has joined game {1}", this.GetPrimaryKey(), _currentGame.GetPrimaryKey());
+        }
+
+        public async Task LeaveGame(IGameGrain game)
+        {
+            if (_currentGame != null)
+            {
+                await game.RemovePlayer(this);
+                _currentGame = null;
+            }
+        }
+
+        public async Task<string> AnswerQuestion(Round round, CancellationToken cancellationToken = default)
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                await Task.FromCanceled<string>(cancellationToken);
+            }
+            _logger.LogInformation("Player {0} answering next question: {1}", this.GetPrimaryKey(), round.Question);
+            int selection = new Random().Next(0, round.Choices.Length - 1);
+            string choice = round.Choices[selection];
+            _logger.LogInformation("Player {0} answers: {1}", this.GetPrimaryKey(), choice);
+            return await Task.FromResult(choice);
+        }
+
+        public void UpdateGame(Game game)
+        {
+            _game = game;
+            _logger.LogInformation("Game updated for player {0}", this.GetPrimaryKey());
         }
     }
 }

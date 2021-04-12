@@ -7,10 +7,20 @@ namespace Guth.OpenTrivia.GrainInterfaces
 {
     public class Game
     {
+        private ImmutableStack<TriviaQuestion> _questions;
         public Guid Key { get; set; }
-        public ImmutableHashSet<Guid> Players { get; set; } = ImmutableHashSet.Create<Guid>();
-        public int MaxSecondsPerRound { get; set; } = 15;
-        public ImmutableStack<TriviaQuestion> Questions { get; set; }
-        public Dictionary<Guid, int> PlayerResults { get; set; } = new Dictionary<Guid, int>();
+        public ImmutableHashSet<Player> Players { get; set; } = ImmutableHashSet.Create<Player>();
+        public ImmutableStack<TriviaQuestion> Questions
+        {
+            get => _questions;
+            set
+            {
+                TotalRounds = value.ToImmutableArray().Length;
+                _questions = value;
+            }
+        }
+        public bool Completed => Questions.IsEmpty;
+        public int RoundNumber { get; set; } = 1;
+        public int TotalRounds { get; private set; }
     }
 }

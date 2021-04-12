@@ -4,11 +4,19 @@ VisualStudioVersion = 16.0.31112.23
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Guth.OpenTrivia.Client", "Guth.OpenTrivia.Client\Guth.OpenTrivia.Client\Guth.OpenTrivia.Client.csproj", "{1A4188B1-A077-40F4-A1D0-2EBA8C82705A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Guth.OpenTrivia.GrainInterfaces", "Guth.OpenTrivia.GrainInterfaces\Guth.OpenTrivia.GrainInterfaces.csproj", "{81C2DE9F-D306-4FA2-80FB-515A965F3681}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Guth.OpenTrivia.GrainInterfaces", "Guth.OpenTrivia.GrainInterfaces\Guth.OpenTrivia.GrainInterfaces.csproj", "{81C2DE9F-D306-4FA2-80FB-515A965F3681}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Guth.OpenTrivia.Abstractions", "Guth.OpenTrivia.Abstractions\Guth.OpenTrivia.Abstractions.csproj", "{4418882B-7E0E-4647-8338-2876CCA83AE9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Guth.OpenTrivia.Abstractions", "Guth.OpenTrivia.Abstractions\Guth.OpenTrivia.Abstractions.csproj", "{4418882B-7E0E-4647-8338-2876CCA83AE9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Guth.OpenTrivia.Grains", "Guth.OpenTrivia.Grains\Guth.OpenTrivia.Grains.csproj", "{F601360A-D8C7-489F-8F39-A21EAD942402}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Guth.OpenTrivia.Grains", "Guth.OpenTrivia.Grains\Guth.OpenTrivia.Grains.csproj", "{F601360A-D8C7-489F-8F39-A21EAD942402}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Guth.OpenTrivia.Silo", "Guth.OpenTrivia.Silo\Guth.OpenTrivia.Silo.csproj", "{569847B5-0A73-4B76-A092-2254760B77C7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Orleans", "Orleans", "{90AB604F-1A12-4B10-9D68-01EF30B48FB1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Guth.OpenTrivia.WebApp", "Guth.OpenTrivia.WebApp\Guth.OpenTrivia.WebApp.csproj", "{9C956B00-28A2-48C8-A0F0-8CCE2FE4077B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Guth.OpenTrivia.ConsoleApp", "Guth.OpenTrivia.ConsoleApp\Guth.OpenTrivia.ConsoleApp.csproj", "{27A7A688-71E3-4A7D-A438-F2D2B8B980AD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,9 +40,26 @@ Global
 		{F601360A-D8C7-489F-8F39-A21EAD942402}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F601360A-D8C7-489F-8F39-A21EAD942402}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F601360A-D8C7-489F-8F39-A21EAD942402}.Release|Any CPU.Build.0 = Release|Any CPU
+		{569847B5-0A73-4B76-A092-2254760B77C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{569847B5-0A73-4B76-A092-2254760B77C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{569847B5-0A73-4B76-A092-2254760B77C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{569847B5-0A73-4B76-A092-2254760B77C7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9C956B00-28A2-48C8-A0F0-8CCE2FE4077B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C956B00-28A2-48C8-A0F0-8CCE2FE4077B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C956B00-28A2-48C8-A0F0-8CCE2FE4077B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C956B00-28A2-48C8-A0F0-8CCE2FE4077B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{27A7A688-71E3-4A7D-A438-F2D2B8B980AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{27A7A688-71E3-4A7D-A438-F2D2B8B980AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{27A7A688-71E3-4A7D-A438-F2D2B8B980AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{27A7A688-71E3-4A7D-A438-F2D2B8B980AD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{81C2DE9F-D306-4FA2-80FB-515A965F3681} = {90AB604F-1A12-4B10-9D68-01EF30B48FB1}
+		{F601360A-D8C7-489F-8F39-A21EAD942402} = {90AB604F-1A12-4B10-9D68-01EF30B48FB1}
+		{569847B5-0A73-4B76-A092-2254760B77C7} = {90AB604F-1A12-4B10-9D68-01EF30B48FB1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AB47A3C2-14CE-4829-800E-E2394B27E5DF}

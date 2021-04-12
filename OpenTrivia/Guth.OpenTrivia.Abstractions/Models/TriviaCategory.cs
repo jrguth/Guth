@@ -2,7 +2,11 @@
 using System.Collections.Immutable;
 namespace Guth.OpenTrivia.Abstractions.Models
 {
-    public record TriviaCategory(
-        [JsonProperty("id")] int Id,
-        [JsonProperty("name")] string Name);
+    public class TriviaCategory
+    {
+        [JsonProperty("id")]
+        public int Id { get; set; }
+        [JsonProperty("name")] 
+        public string Name { get; set; }
+    }
 }

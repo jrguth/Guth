@@ -9,6 +9,6 @@ namespace Guth.OpenTrivia.Abstractions
     {
         Task<string> GetSessionToken();
         Task<ImmutableList<TriviaCategory>> GetTriviaCategories(string sessionToken = null);
-        Task<ImmutableList<TriviaQuestion>> GetTriviaQuestions(Action<QuestionOptions> configureOptions = null, string sessionToken = null);
+        Task<ImmutableList<TriviaQuestion>> GetTriviaQuestions(QuestionOptions configureOptions = null, string sessionToken = null);
     }
 }

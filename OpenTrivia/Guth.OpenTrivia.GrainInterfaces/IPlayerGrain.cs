@@ -1,13 +1,21 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
+using System.Collections.Immutable;
+using System;
 using Orleans;
+using Guth.OpenTrivia.Abstractions;
 using Guth.OpenTrivia.Abstractions.Models;
 
 namespace Guth.OpenTrivia.GrainInterfaces
 {
-    public interface IPlayerGrain : IGrainWithGuidKey
+    public interface IPlayerGrain : IGrainWithGuidKey, IGameObserver
     {
-        Task<IGameSessionGrain> CurrentGame { get; }
-        Task JoinGame(IGameSessionGrain game);
-        Task LeaveGame(IGameSessionGrain game);
+        Task<Player> GetPlayer();
+        Task<Game> GetCurrentGame();
+        Task SetName(string name);
+        Task<Guid> CreateGame(GameOptions gameOptions, QuestionOptions questionOptions);
+        Task JoinGame(IGameGrain game);
+        Task LeaveGame(IGameGrain game);
+        Task<string> AnswerQuestion(Round round, CancellationToken cancellationToken = default);
     }
 }

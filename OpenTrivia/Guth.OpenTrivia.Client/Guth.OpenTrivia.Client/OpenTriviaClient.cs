@@ -4,9 +4,9 @@ using System.Collections.Immutable;
 using RestSharp;
 using Newtonsoft.Json;
 using Guth.OpenTrivia.Abstractions.Models;
-using Guth.OpenTrivia.Abstractions.Enums;
+using Guth.OpenTrivia.Abstractions;
 
-namespace Guth.OpenTrivia.Abstractions
+namespace Guth.OpenTrivia.Client
 {
     public class OpenTriviaClient : IOpenTriviaClient
     {
@@ -42,19 +42,14 @@ namespace Guth.OpenTrivia.Abstractions
             return response.Categories;
         }
 
-        public async Task<ImmutableList<TriviaQuestion>> GetTriviaQuestions(Action<QuestionOptions> configureOptions = null, string sessionToken = null)
+        public async Task<ImmutableList<TriviaQuestion>> GetTriviaQuestions(QuestionOptions questionOptions, string sessionToken = null)
         {
-            var optionsBuilder = new QuestionOptions();
-            if (configureOptions != null)
-            {
-                configureOptions(optionsBuilder);
-            }
 
             var request = new OpenTriviaRequest<GetTriviaQuestionsResponse>("api.php", sessionToken)
-                .AddParameter("amount", optionsBuilder.NumberOfQuestions)
-                .AddParameterIfNotNull("category", (int?)optionsBuilder.Category)
-                .AddParameterIfNotNull("difficulty", optionsBuilder.Difficulty)
-                .AddParameterIfNotNull("type", optionsBuilder.Type);
+                .AddParameter("amount", questionOptions.NumberOfQuestions)
+                .AddParameterIfNotNull("category", (int?)questionOptions.Category)
+                .AddParameterIfNotNull("difficulty", questionOptions.Difficulty)
+                .AddParameterIfNotNull("type", questionOptions.Type);
 
             GetTriviaQuestionsResponse response = await Execute(request);
             return response.Questions;

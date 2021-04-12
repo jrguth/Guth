@@ -4,7 +4,11 @@ using Guth.OpenTrivia.Abstractions.Enums;
 
 namespace Guth.OpenTrivia.Abstractions.Models
 {
-    public record GetTriviaQuestionsResponse(
-        [JsonProperty("response_code")] int ResponseCode,
-        [JsonProperty("results")] ImmutableList<TriviaQuestion> Questions);
+    public class GetTriviaQuestionsResponse
+    {
+        [JsonProperty("response_code")]
+        public int ResponseCode { get; set; }
+        [JsonProperty("results")] 
+        public ImmutableList<TriviaQuestion> Questions { get; set; }
+    }
 }

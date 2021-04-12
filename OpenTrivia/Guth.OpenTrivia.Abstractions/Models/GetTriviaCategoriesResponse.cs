@@ -2,5 +2,9 @@
 using System.Collections.Immutable;
 namespace Guth.OpenTrivia.Abstractions.Models
 {
-    public record GetTriviaCategoriesResponse([JsonProperty("trivia_categories")]ImmutableList<TriviaCategory> Categories);
+    public class GetTriviaCategoriesResponse
+    {
+        [JsonProperty("trivia_categories")]
+        public ImmutableList<TriviaCategory> Categories { get; set; }
+    }
 }

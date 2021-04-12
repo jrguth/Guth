@@ -1,8 +1,13 @@
 ﻿using Newtonsoft.Json;
 namespace Guth.OpenTrivia.Abstractions.Models
 {
-    public record GetSessionTokenResponse(
-        [JsonProperty("response_code")] int ResponseCode, 
-        [JsonProperty("response_message")] string ResponseMessage,
-        [JsonProperty("token")] string Token);
+    public class GetSessionTokenResponse
+    {
+        [JsonProperty("response_code")]
+        public int ResponseCode { get; set; }
+        [JsonProperty("response_message")] 
+        public string ResponseMessage { get; set; }
+        [JsonProperty("token")] 
+        public string Token { get; set; }
+    }
 }
