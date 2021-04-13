@@ -14,9 +14,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Guth.OpenTrivia.Silo", "Gut
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Orleans", "Orleans", "{90AB604F-1A12-4B10-9D68-01EF30B48FB1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Guth.OpenTrivia.WebApp", "Guth.OpenTrivia.WebApp\Guth.OpenTrivia.WebApp.csproj", "{9C956B00-28A2-48C8-A0F0-8CCE2FE4077B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Guth.OpenTrivia.WebApp", "Guth.OpenTrivia.WebApp\Guth.OpenTrivia.WebApp.csproj", "{9C956B00-28A2-48C8-A0F0-8CCE2FE4077B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Guth.OpenTrivia.ConsoleApp", "Guth.OpenTrivia.ConsoleApp\Guth.OpenTrivia.ConsoleApp.csproj", "{27A7A688-71E3-4A7D-A438-F2D2B8B980AD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Guth.OpenTrivia.ConsoleApp", "Guth.OpenTrivia.ConsoleApp\Guth.OpenTrivia.ConsoleApp.csproj", "{27A7A688-71E3-4A7D-A438-F2D2B8B980AD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

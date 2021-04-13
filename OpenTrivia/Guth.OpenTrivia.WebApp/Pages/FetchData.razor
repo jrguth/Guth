@@ -1,4 +1,4 @@
-﻿@page "/fetchdata"
+﻿@*@page "/fetchdata"
 
 @using Guth.OpenTrivia.WebApp.Data
 @inject WeatherForecastService ForecastService
@@ -43,4 +43,4 @@ else
     {
         forecasts = await ForecastService.GetForecastAsync(DateTime.Now);
     }
-}
+}*@

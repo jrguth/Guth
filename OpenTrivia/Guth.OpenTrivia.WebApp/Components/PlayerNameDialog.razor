@@ -1,0 +1,17 @@
+﻿<MudDialog>
+    <DialogContent>
+        <MudForm>
+            <MudTextField Variant="Variant.Outlined" T="string" Required="true" RequiredError="Name is required!" @bind-Text="_playerName"></MudTextField>
+            <MudCardActions>
+                <MudButton OnClick="Submit" Variant="Variant.Filled" Color="Color.Primary">Submit</MudButton>
+            </MudCardActions>  
+        </MudForm>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    private string _playerName;
+
+    void Submit() => MudDialog.Close(DialogResult.Ok(_playerName));
+}

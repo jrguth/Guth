@@ -1,4 +1,4 @@
-using Guth.OpenTrivia.WebApp.Data;
+using Guth.OpenTrivia.WebApp.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Hosting;
@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MudBlazor.Services;
 
 namespace Guth.OpenTrivia.WebApp
 {
@@ -28,7 +29,8 @@ namespace Guth.OpenTrivia.WebApp
         {
             services.AddRazorPages();
             services.AddServerSideBlazor();
-            services.AddSingleton<WeatherForecastService>();
+            services.AddClusterService(Configuration["Orleans:ClusterId"], Configuration["Orleans:ServiceId"]);
+            services.AddMudServices();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

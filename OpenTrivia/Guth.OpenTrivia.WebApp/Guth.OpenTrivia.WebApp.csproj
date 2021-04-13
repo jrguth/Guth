@@ -4,4 +4,12 @@
     <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="MudBlazor" Version="5.0.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Guth.OpenTrivia.GrainInterfaces\Guth.OpenTrivia.GrainInterfaces.csproj" />
+  </ItemGroup>
+
 </Project>
