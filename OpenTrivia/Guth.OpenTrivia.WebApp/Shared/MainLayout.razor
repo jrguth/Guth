@@ -1,4 +1,9 @@
 ﻿@inherits LayoutComponentBase
+@inject IClusterClient ClusterClient
+@inject IDialogService DialogService
+@using Guth.OpenTrivia.GrainInterfaces
+@using Guth.OpenTrivia.WebApp.Components
+@using Orleans
 
 <MudThemeProvider />
 <MudDialogProvider />
@@ -12,14 +17,22 @@
         <NavMenu />
     </MudDrawer>
     <MudMainContent>
-        <MudContainer Class="pa-2">
-            @Body
-        </MudContainer>
+        <CascadingValue Name="PlayerGrain" Value="_playerGrain">
+            <MudContainer Class="pa-2">
+                @Body
+            </MudContainer>
+        </CascadingValue>
     </MudMainContent>
 </MudLayout>
 
 @code {
     private bool _drawerOpen = false;
+    private IPlayerGrain _playerGrain;
+
+    protected override void OnInitialized()
+    {
+        _playerGrain = ClusterClient.GetGrain<IPlayerGrain>(Guid.NewGuid());
+    }
 
     private void ToggleDrawer()
     {

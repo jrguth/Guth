@@ -2,6 +2,7 @@
 {
     public enum QuestionCategory
 	{
+		Any = 0,
 		GeneralKnowledge = 9,
 		Books = 10,
 		Film = 11,

@@ -45,7 +45,7 @@ namespace Guth.OpenTrivia.Client
         public async Task<ImmutableList<TriviaQuestion>> GetTriviaQuestions(QuestionOptions questionOptions, string sessionToken = null)
         {
 
-            var request = new OpenTriviaRequest<GetTriviaQuestionsResponse>("api.php", sessionToken)
+            var request = new OpenTriviaRequest <GetTriviaQuestionsResponse>("api.php", sessionToken)
                 .AddParameter("amount", questionOptions.NumberOfQuestions)
                 .AddParameterIfNotNull("category", (int?)questionOptions.Category)
                 .AddParameterIfNotNull("difficulty", questionOptions.Difficulty.ToString().ToLower())

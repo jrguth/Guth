@@ -6,53 +6,54 @@
 @using Orleans
 @using MudBlazor
 
-@if (_renderPlayerCard)
+@if (_playerName != null)
 {
-    <MudCard Class="w-25 mx-auto justify-center mb-4" Elevation="5">
-        <MudCardHeader Class="justify-center">
-            <CardHeaderAvatar>
-                @if (_playerInitialized)
-                {
-                    <MudAvatar Color="@GetRandomColor()">@_playerName[0].ToString().ToUpper()</MudAvatar>
-                }
-                else
-                {
-                    <MudSkeleton Class="mx-auto" SkeletonType="SkeletonType.Circle" Width="40px" Height="40px"></MudSkeleton>
-                }
-            </CardHeaderAvatar>
-        </MudCardHeader>
-        
-        <MudCardContent>
-            @if (_playerInitialized)
-            {
-                <MudText Align="Align.Center" Typo="Typo.h4">@_playerName</MudText>
-            }
-            else
-            {
-                <MudSkeleton Class="mx-auto"  SkeletonType="SkeletonType.Text"></MudSkeleton>
-            }
-        </MudCardContent>
-    </MudCard>
+    <MudGrid Justify="Justify.Center">
+        <MudItem xs="12">
+            <MudCard Class="w-25 mx-auto mb-4" Elevation="5">
+                <MudCardHeader Class="justify-center">
+                    <CardHeaderAvatar>
+                        @if (_playerInitialized)
+                        {
+                            <MudAvatar Color="@GetRandomColor()">@_playerName[0].ToString().ToUpper()</MudAvatar>
+                        }
+                        else
+                        {
+                            <MudSkeleton Class="mx-auto" SkeletonType="SkeletonType.Circle" Width="40px" Height="40px"></MudSkeleton>
+                        }
+                    </CardHeaderAvatar>
+                </MudCardHeader>
+                <MudCardContent>
+                    @if (_playerInitialized)
+                    {
+                        <MudText Align="Align.Center" Typo="Typo.h4">@_playerName</MudText>
+                    }
+                    else
+                    {
+                        <MudSkeleton Class="mx-auto" SkeletonType="SkeletonType.Text"></MudSkeleton>
+                    }
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="4">
+            <MudText Align="Align.Center" Typo="Typo.h6">Connect to a game</MudText> 
+        </MudItem>
+        <MudItem xs="4">
+            <MudText Align="Align.Center" Typo="Typo.h6">Start a new game</MudText>
+            <CreateGameForm OnGameCreated="GameCreated"></CreateGameForm>
+        </MudItem>
+    </MudGrid>
+    
+
 }
 
-
-
 @code {
-    private bool _renderPlayerCard;
-    private IPlayerGrain _player;
-    private Guid _playerId;
+    [CascadingParameter(Name = "PlayerGrain")]
+    private IPlayerGrain _playerGrain { get; set; }
     private string _playerName;
-    private bool _playerInitialized;
     private IDialogReference _dialog;
-    private Task _playerInit;
-
-    protected override void OnInitialized()
-    {
-        _playerName = string.Empty;
-        _playerInitialized = false;
-        _renderPlayerCard = false;
-        _playerInit = InitializePlayer();
-    }
+    private bool _playerInitialized = false;
+    private string _gameConnectionCode;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -64,20 +65,18 @@
                 Position = DialogPosition.Center
             });
             DialogResult result = await dialog.Result;
-            _renderPlayerCard = true;
             _playerName = result.Data as string;
             StateHasChanged();
-            await _playerInit;
+            await Task.Delay(TimeSpan.FromSeconds(2));
+            await _playerGrain.SetName(result.Data as string);
+            _playerInitialized = true;
+            StateHasChanged();
         }
     }
 
-    private async Task InitializePlayer()
+    private async Task GameCreated(IGameGrain gameGrain)
     {
-        _player = ClusterClient.GetGrain<IPlayerGrain>(Guid.NewGuid());
-        _playerId = _player.GetPrimaryKey();
-        await _player.SetName(_playerName);
-        _playerInitialized = true;
-        StateHasChanged();
+        gameGrain.GetPrimaryKey();
     }
 
     private Color GetRandomColor()
