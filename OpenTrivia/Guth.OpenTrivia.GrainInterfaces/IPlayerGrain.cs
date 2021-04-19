@@ -5,10 +5,11 @@ using System;
 using Orleans;
 using Guth.OpenTrivia.Abstractions;
 using Guth.OpenTrivia.Abstractions.Models;
+using Guth.OpenTrivia.GrainInterfaces.Models;
 
 namespace Guth.OpenTrivia.GrainInterfaces
 {
-    public interface IPlayerGrain : IGrainWithGuidKey, IGameObserver
+    public interface IPlayerGrain : IGrainWithGuidKey
     {
         Task<Player> GetPlayer();
         Task<Game> GetCurrentGame();
@@ -16,6 +17,6 @@ namespace Guth.OpenTrivia.GrainInterfaces
         Task<IGameGrain> CreateGame(GameOptions gameOptions, QuestionOptions questionOptions);
         Task JoinGame(IGameGrain game);
         Task LeaveGame(IGameGrain game);
-        Task<string> AnswerQuestion(Round round);
+        Task SetNextRound(TriviaRound round);
     }
 }

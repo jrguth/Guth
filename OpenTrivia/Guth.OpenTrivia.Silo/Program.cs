@@ -10,6 +10,7 @@ using Orleans.Configuration;
 using Guth.OpenTrivia.Grains;
 using Guth.OpenTrivia.Abstractions;
 using Guth.OpenTrivia.Client;
+using SignalR.Orleans;
 
 namespace Guth.OpenTrivia.Silo
 {
@@ -35,6 +36,7 @@ namespace Guth.OpenTrivia.Silo
         {
             builder
                 .UseLocalhostClustering()
+                .UseSignalR()
                 .Configure<ClusterOptions>(opts =>
                 {
                     opts.ClusterId = "guth-open-trivia-cluster";

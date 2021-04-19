@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Guth.OpenTrivia.Abstractions.Models;
 using Guth.OpenTrivia.Abstractions.Enums;
 
 namespace Guth.OpenTrivia.GrainInterfaces
@@ -10,5 +11,6 @@ namespace Guth.OpenTrivia.GrainInterfaces
         public Guid Key { get; set; }
         public string Name { get; set; }
         public int Points { get; set; } = 0;
+        public TriviaQuestion CurrentQuestion { get; set; }
     }
 }

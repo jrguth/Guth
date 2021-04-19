@@ -3,57 +3,40 @@
 @inject IDialogService DialogService
 @using Guth.OpenTrivia.GrainInterfaces
 @using Guth.OpenTrivia.WebApp.Components
+@using Guth.OpenTrivia.Abstractions
+@using Guth.OpenTrivia.Abstractions.Models
 @using Orleans
 @using MudBlazor
 
-@if (_playerName != null)
+<LoadingOverlay Visible="(!_playerInitialized && !string.IsNullOrEmpty(_playerName)) || _gameLoading" />
+@if (_playerInitialized)
 {
     <MudGrid Justify="Justify.Center">
-        <MudItem xs="12">
-            <MudCard Class="w-25 mx-auto mb-4" Elevation="5">
-                <MudCardHeader Class="justify-center">
-                    <CardHeaderAvatar>
-                        @if (_playerInitialized)
-                        {
-                            <MudAvatar Color="@GetRandomColor()">@_playerName[0].ToString().ToUpper()</MudAvatar>
-                        }
-                        else
-                        {
-                            <MudSkeleton Class="mx-auto" SkeletonType="SkeletonType.Circle" Width="40px" Height="40px"></MudSkeleton>
-                        }
-                    </CardHeaderAvatar>
-                </MudCardHeader>
-                <MudCardContent>
-                    @if (_playerInitialized)
-                    {
-                        <MudText Align="Align.Center" Typo="Typo.h4">@_playerName</MudText>
-                    }
-                    else
-                    {
-                        <MudSkeleton Class="mx-auto" SkeletonType="SkeletonType.Text"></MudSkeleton>
-                    }
-                </MudCardContent>
-            </MudCard>
+        <MudItem Class="w-25 mx-auto mb-4" xs="12">
+            <MudText Align="Align.Center" Typo="Typo.h2">Welcome @(_playerName)!</MudText>
         </MudItem>
-        <MudItem xs="4">
-            <MudText Align="Align.Center" Typo="Typo.h6">Connect to a game</MudText> 
+        <MudItem xs="10" md="5" lg="5">
+            <MudText Align="Align.Center" Typo="Typo.h6">Connect to a game</MudText>
         </MudItem>
-        <MudItem xs="4">
+        <MudItem xs="10" md="5" lg="5">
             <MudText Align="Align.Center" Typo="Typo.h6">Start a new game</MudText>
-            <CreateGameForm OnGameCreated="GameCreated"></CreateGameForm>
+            <CreateGameForm OnSubmit="@((args) => CreateGame(args.Item1, args.Item2))"></CreateGameForm>
         </MudItem>
     </MudGrid>
-    
-
 }
+
+
 
 @code {
     [CascadingParameter(Name = "PlayerGrain")]
     private IPlayerGrain _playerGrain { get; set; }
-    private string _playerName;
     private IDialogReference _dialog;
+    private IGameGrain _gameGrain;
+
+    private string _playerName;
     private bool _playerInitialized = false;
-    private string _gameConnectionCode;
+    private bool _gameLoading = false;
+
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -74,9 +57,15 @@
         }
     }
 
-    private async Task GameCreated(IGameGrain gameGrain)
+    private async Task CreateGame(GameOptions gameOptions, QuestionOptions questionOptions)
     {
-        gameGrain.GetPrimaryKey();
+        _gameLoading = true;
+        StateHasChanged();
+        _gameGrain = await _playerGrain.CreateGame(gameOptions, questionOptions);
+        var key = _gameGrain.GetPrimaryKey();
+        _gameLoading = false;
+        StateHasChanged();
+        await DialogService.ShowMessageBox("Game Created!", $"Game ID: {key}");
     }
 
     private Color GetRandomColor()

@@ -2,42 +2,41 @@
 @using Guth.OpenTrivia.Abstractions
 @using Guth.OpenTrivia.Abstractions.Enums
 
-<MudForm>
-    <MudSelect Variant="Variant.Outlined" T="int" Label="Number of questions" Required="true" @bind-Value="_numQuestions">
-        @for (int i = 1; i <= 50; i++)
-        {
-            <MudSelectItem Value="@i">@i</MudSelectItem>
-        }
-    </MudSelect>
-    <MudSelect Variant="Variant.Outlined" T="QuestionCategory?" Label="Category" @bind-Value="_questionOptions.Category" HelperText="If no category is selected, each question category will be randomized">
-        @foreach (var category in Enum.GetValues<QuestionCategory>())
-        {
-            <MudSelectItem Value="@category">@category</MudSelectItem>
-        }
-    </MudSelect>
-    <MudSelect Variant="Variant.Outlined" T="QuestionDifficulty?" Label="Difficulty" Required="true" @bind-Value="_questionOptions.Difficulty">
-        @foreach (var difficulty in Enum.GetValues<QuestionDifficulty>())
-        {
-            <MudSelectItem Value="@difficulty">@difficulty</MudSelectItem>
-        }
-    </MudSelect>
-    <MudCardActions>
-        <MudButton OnClick="CreateNewGame" Variant="Variant.Filled" Color="Color.Primary">Create Game</MudButton>
+<MudCard Elevation="5">
+    <MudCardContent>
+        <MudForm>
+            <MudSelect T="int" Label="Number of questions" Required="true" Dense="true" @bind-Value="_questionOptions.NumberOfQuestions">
+                @for (int i = 1; i <= 50; i++)
+                {
+                    <MudSelectItem Value="@i"></MudSelectItem>
+                }
+            </MudSelect>
+            <MudSelect T="QuestionCategory" Label="Category" @bind-Value="_questionOptions.Category" Dense="true">
+                @foreach (var category in Enum.GetValues<QuestionCategory>())
+                {
+                    <MudSelectItem Value="@category">@category</MudSelectItem>
+                }
+            </MudSelect>
+            <MudSelect T="QuestionDifficulty" Label="Difficulty" Required="true" @bind-Value="_questionOptions.Difficulty" Dense="true">
+                @foreach (var difficulty in Enum.GetValues<QuestionDifficulty>())
+                {
+                    <MudSelectItem Value="@difficulty">@difficulty</MudSelectItem>
+                }
+            </MudSelect>
+        </MudForm>
+    </MudCardContent>
+    <MudCardActions Class="justify-content-center">
+        <MudButton OnClick="InvokeOnSubmit" Variant="Variant.Filled" Color="Color.Primary">Create Game</MudButton>
     </MudCardActions>
-</MudForm>
+</MudCard>
 
 @code {
-    [CascadingParameter]
-    private IPlayerGrain _playerGrain { get; set; }
     private IGameGrain _gameGrain;
-    private QuestionDifficulty _difficulty;
-    private QuestionCategory? _category;
-    private int _numQuestions;
     private QuestionOptions _questionOptions;
     private GameOptions _gameOptions;
 
     [Parameter]
-    public EventCallback<IGameGrain> OnGameCreated { get; set; }
+    public EventCallback<(GameOptions,QuestionOptions)> OnSubmit { get; set; }
 
     protected override void OnInitialized()
     {
@@ -45,19 +44,8 @@
         _gameOptions = new GameOptions();
     }
 
-    private async Task CreateNewGame()
+    private async Task InvokeOnSubmit()
     {
-        _questionOptions
-            .WithNumberOfQuestions(_numQuestions)
-            .WithCategory(_category)
-            .WithDifficulty(_difficulty)
-            .WithQuestionType(QuestionType.MultipleChoice);
-        _gameGrain = await _playerGrain.CreateGame(_gameOptions, _questionOptions);
-        await OnGameCreated.InvokeAsync(_gameGrain);
-    }
-
-    private void OnDifficultySelected(QuestionDifficulty difficulty)
-    {
-        _questionOptions.WithDifficulty(difficulty);
+        await OnSubmit.InvokeAsync((_gameOptions, _questionOptions));
     }
 }

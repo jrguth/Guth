@@ -5,6 +5,7 @@ using RestSharp;
 using Newtonsoft.Json;
 using Guth.OpenTrivia.Abstractions.Models;
 using Guth.OpenTrivia.Abstractions;
+using Guth.OpenTrivia.Abstractions.Enums;
 
 namespace Guth.OpenTrivia.Client
 {
@@ -47,9 +48,9 @@ namespace Guth.OpenTrivia.Client
 
             var request = new OpenTriviaRequest <GetTriviaQuestionsResponse>("api.php", sessionToken)
                 .AddParameter("amount", questionOptions.NumberOfQuestions)
-                .AddParameterIfNotNull("category", (int?)questionOptions.Category)
-                .AddParameterIfNotNull("difficulty", questionOptions.Difficulty.ToString().ToLower())
-                .AddParameterIfNotNull("type", questionOptions.Type == Abstractions.Enums.QuestionType.MultipleChoice ? "multiple" : "boolean");
+                .AddParameter("category", questionOptions.Category == QuestionCategory.Any ? null : (int)questionOptions.Category)
+                .AddParameter("difficulty", questionOptions.Difficulty.GetEnumMemberAttributeValue())
+                .AddParameter("type", questionOptions.Type.GetEnumMemberAttributeValue());
 
             GetTriviaQuestionsResponse response = await Execute(request);
             return response.Questions;

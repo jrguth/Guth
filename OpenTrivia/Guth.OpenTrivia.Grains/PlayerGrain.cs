@@ -18,6 +18,7 @@ namespace Guth.OpenTrivia.Grains
         private IGrainFactory _grainFactory;
 
         private Game _game;
+        private TriviaQuestion _nextQuestion;
 
         public PlayerGrain(ILogger<IPlayerGrain> logger, IGrainFactory grainFactory)
         {
@@ -38,6 +39,7 @@ namespace Guth.OpenTrivia.Grains
             State.Name = name;
             return Task.CompletedTask;
         }
+
 
         public async Task<IGameGrain> CreateGame(GameOptions gameOptions, QuestionOptions questionOptions)
         {
@@ -63,20 +65,14 @@ namespace Guth.OpenTrivia.Grains
             }
         }
 
-        public async Task<string> AnswerQuestion(Round round)
+        public Task<TriviaAnswer> AnswerRoundQuestion(TriviaRound round, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Player {0} answering next question: {1}", this.GetPrimaryKey(), round.Question);
-            int selection = new Random().Next(0, round.Choices.Length - 1);
-            string choice = round.Choices[selection];
-            _logger.LogInformation("Player {0} answers: {1}", this.GetPrimaryKey(), choice);
-            return await Task.FromResult(choice);
+            throw new NotImplementedException();
         }
 
         public void UpdateGame(Game game)
         {
-            _game = game;
-            Console.WriteLine("Game updated!");
-            _logger.LogInformation("Game updated for player {0}", this.GetPrimaryKey());
+            throw new NotImplementedException();
         }
     }
 }

@@ -6,25 +6,26 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using Microsoft.Extensions.Logging;
 using Orleans;
-using Orleans.Streams;
+using Orleans.Concurrency;
 using Guth.OpenTrivia.GrainInterfaces;
 using Guth.OpenTrivia.Abstractions.Models;
 using Guth.OpenTrivia.Abstractions;
 
 namespace Guth.OpenTrivia.Grains
 {
+    [Reentrant]
     public class GameGrain : Grain<Game>, IGameGrain
     {
         private readonly IOpenTriviaClient _openTriviaClient;
         private readonly ILogger<IGameGrain> _logger;
         private string _openTriviaSessionToken;
 
-        private ObserverSubscriptionManager<IGameObserver> _subscriptionManager;
-
-        private ImmutableHashSet<IPlayerGrain> _players;
+        private HashSet<IPlayerGrain> _players;
 
         private GameOptions _gameOptions;
         private QuestionOptions _questionOptions;
+
+        private int _roundNumber = 0;
 
         public GameGrain(IOpenTriviaClient openTriviaClient, ILogger<IGameGrain> logger)
         {
@@ -34,9 +35,9 @@ namespace Guth.OpenTrivia.Grains
 
         public override async Task OnActivateAsync()
         {
-            _logger.LogInformation("Activating new Game grain with id {0}", this.GetPrimaryKey());
-            _subscriptionManager = new ObserverSubscriptionManager<IGameObserver>();
-            _players = ImmutableHashSet.Create<IPlayerGrain>();
+            State.Key = this.GetPrimaryKey();
+            _logger.LogInformation("Activating new Game grain with id {0}", State.Key);
+            _players = new HashSet<IPlayerGrain>();
             _openTriviaSessionToken = await _openTriviaClient.GetSessionToken();
             _logger.LogInformation("Obtained open trivia session token: {0}", _openTriviaSessionToken);
             await base.OnActivateAsync();
@@ -49,64 +50,76 @@ namespace Guth.OpenTrivia.Grains
             return Task.CompletedTask;
         }
 
-        public async Task Start()
+        public async Task Play()
         {
             _logger.LogInformation("Starting game...");
-            ImmutableList<TriviaQuestion> questions = await _openTriviaClient.GetTriviaQuestions(_questionOptions, _openTriviaSessionToken);
-            State.Questions = new Stack<TriviaQuestion>(questions.ToArray());
-            _logger.LogInformation("Cached {0} trivia questions", questions.Count);
-            await _subscriptionManager.Notify(observer => observer.UpdateGame(State));
+            await CacheTriviaQuestions();
+            while (State.Questions.Count > 0)
+            {
+                await StartNextRound();
+
+            }
         }
 
         public async Task AddPlayer(IPlayerGrain player)
         {
             Player p = await player.GetPlayer();
             State.Players.Add(p);
-            _players = _players.Add(player);
-            await _subscriptionManager.Notify(observer => observer.UpdateGame(State));
+            _players.Add(player);
         }
 
         public async Task RemovePlayer(IPlayerGrain player)
         {
             Player p = await player.GetPlayer();
             State.Players.Remove(p);
-            _players = _players.Remove(player);
-            _subscriptionManager.RemoveSubscriber(player);
-            await _subscriptionManager.Notify(observer => observer.UpdateGame(State));
+            _players.Remove(player);
         }
 
-        public async Task<bool> StartNextRound(int bufferSeconds = 3)
+        public Task SubmitAnswer(TriviaAnswer answer)
         {
-            if (!State.IsComplete)
+            State.Answers[State.CurrentQuestion].Add(answer);
+            return Task.CompletedTask;
+        }
+
+        private async Task AllAnswersReceivedOrTimeout()
+        {
+            Task.
+        }
+
+        private async Task StartNextRound()
+        {
+            var tasks = new List<Task>();
+            State.CurrentQuestion = State.Questions.Pop();
+            State.Answers.Add(State.CurrentQuestion, new List<TriviaAnswer>());
+            var round = new TriviaRound
             {
-                State.RoundNumber = State.RoundNumber++;
-                _logger.LogInformation("Starting round {0} of {1}", State.RoundNumber, State.TotalRounds);
-                TriviaQuestion question = State.Questions.Pop();
-                _logger.LogInformation("Next question: {0}", question.Question);
-
-                var choices = question.IncorrectAnswers.Insert(new Random().Next(0, question.IncorrectAnswers.Length), question.CorrectAnswer);
-                var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(_gameOptions.SecondsPerRound + bufferSeconds));
-                _logger.LogInformation("Number of players: {0}", _players.Count);
-                IEnumerable<Task> tasks = _players.Select(player =>
-                {
-                    var task = new Task(async () =>
-                    {
-                        _logger.LogInformation("Asking question to player {0}", player.GetPrimaryKey());
-                        string answer = await player.AnswerQuestion(new Round(question.Question, bufferSeconds, choices));
-                        _logger.LogInformation("Received answer from player {0}: {1}", player.GetPrimaryKey(), answer);
-
-                        if (answer == question.CorrectAnswer)
-                        {
-                            State.Players.First(p => p.Key == player.GetPrimaryKey()).Points += 1;
-                        }
-                    });
-                    task.Start();
-                    return task;
-                });
-
-                await Task.WhenAll(tasks);
+                Question = State.CurrentQuestion.Question,
+                Choices = State.CurrentQuestion.IncorrectAnswers.Insert(new Random().Next(State.CurrentQuestion.IncorrectAnswers.Length), State.CurrentQuestion.CorrectAnswer),
+                CountdownSeconds = _gameOptions.SecondsPerRound,
+                RoundNumber = ++_roundNumber
+            };
+            foreach (IPlayerGrain player in _players)
+            {
+                tasks.Add(Task.Factory.StartNew(async () => await player.SetNextRound(round)));
             }
-            return State.IsComplete;
+            await Task.WhenAll(tasks);
+        }
+
+        private async Task AcceptPlayerAnswer(TriviaRound round, IPlayerGrain player, CancellationToken cancellationToken)
+        {
+            string answer = await player.AnswerRoundQuestion(round, cancellationToken);
+
+            if (answer == State.CurrentQuestion.CorrectAnswer)
+            {
+
+            }
+        }
+
+        private async Task CacheTriviaQuestions()
+        {
+            ImmutableList<TriviaQuestion> questions = await _openTriviaClient.GetTriviaQuestions(_questionOptions, _openTriviaSessionToken);
+            State.Questions = new Stack<TriviaQuestion>(questions.ToArray());
+            _logger.LogInformation("Cached {0} trivia questions", questions.Count);
         }
     }
 }

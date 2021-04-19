@@ -6,12 +6,12 @@ namespace Guth.OpenTrivia.Abstractions
     public class QuestionOptions
     {
         public int NumberOfQuestions { get; set; } = 10;
-        public QuestionDifficulty? Difficulty { get; set; }
-        public QuestionType? Type { get; set; }
-        public QuestionCategory? Category { get; set; }
+        public QuestionDifficulty Difficulty { get; set; }
+        public QuestionType Type { get; set; }
+        public QuestionCategory Category { get; set; }
 
 
-        public QuestionOptions WithCategory(QuestionCategory? category)
+        public QuestionOptions WithCategory(QuestionCategory category)
         {
             Category = category;
             return this;
@@ -27,13 +27,13 @@ namespace Guth.OpenTrivia.Abstractions
             return this;
         }
 
-        public QuestionOptions WithDifficulty(QuestionDifficulty? difficulty)
+        public QuestionOptions WithDifficulty(QuestionDifficulty difficulty)
         {
             Difficulty = difficulty;
             return this;
         }
 
-        public QuestionOptions WithQuestionType(QuestionType? type)
+        public QuestionOptions WithQuestionType(QuestionType type)
         {
             Type = type;
             return this;
