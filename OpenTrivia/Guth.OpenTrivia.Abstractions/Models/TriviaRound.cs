@@ -1,12 +1,15 @@
-﻿using System.Collections.Immutable;
+﻿using System.Collections.Generic;
+
 namespace Guth.OpenTrivia.Abstractions.Models
 {
     public class TriviaRound
     {
-        public int RoundNumber { get; set; }
-        public int TotalRounds { get; set; }
-        public int CountdownSeconds { get; set; }
-        public string Question { get; set; }
-        public ImmutableArray<string> Choices { get; set; }
+        public TriviaQuestion Question { get; private set; }
+        public ICollection<TriviaAnswer> Answers { get; set; } = new List<TriviaAnswer>();
+
+        public TriviaRound(TriviaQuestion question)
+        {
+            Question = question;
+        }
     }
 }

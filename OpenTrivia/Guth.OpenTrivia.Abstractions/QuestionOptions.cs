@@ -38,5 +38,17 @@ namespace Guth.OpenTrivia.Abstractions
             Type = type;
             return this;
         }
+
+        public override bool Equals(object obj)
+            => obj is QuestionOptions ? Equals(obj as QuestionOptions) : false;
+
+        private bool Equals(QuestionOptions obj)
+        {
+            return
+                NumberOfQuestions == obj.NumberOfQuestions &&
+                Difficulty == obj.Difficulty &&
+                Type == obj.Type &&
+                Category == obj.Category;
+        }
     }
 }

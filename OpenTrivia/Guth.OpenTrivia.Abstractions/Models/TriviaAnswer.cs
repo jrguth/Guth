@@ -6,8 +6,7 @@ namespace Guth.OpenTrivia.Abstractions.Models
 {
     public class TriviaAnswer
     {
-        public Player Player { get; set; }
+        public string PlayerId { get; set; }
         public string Answer { get; set; }
-        public TimeSpan TimeElapsed { get; set; }
     }
 }
