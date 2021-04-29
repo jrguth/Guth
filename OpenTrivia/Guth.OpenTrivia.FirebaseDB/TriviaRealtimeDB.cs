@@ -12,7 +12,7 @@ using Guth.OpenTrivia.Abstractions;
 using Guth.OpenTrivia.Abstractions.Enums;
 using Guth.OpenTrivia.Abstractions.Models;
 
-namespace Guth.OpenTrivia.Firebase
+namespace Guth.OpenTrivia.FirebaseDB
 {
     public class TriviaRealtimeDB
     {
@@ -27,7 +27,7 @@ namespace Guth.OpenTrivia.Firebase
             DbClient = client;
         }
 
-        public async Task<string> CreateGame(string playerId)
+        public async Task<Game> CreateGame(QuestionOptions questionOptions = null)
         {
             CancellationToken cancellationToken = new CancellationTokenSource(TimeSpan.FromSeconds(30)).Token;
             ConnectionCode connection = await GenerateGameConnection(cancellationToken);
@@ -35,11 +35,12 @@ namespace Guth.OpenTrivia.Firebase
             FirebaseObject<Game> created = await GetChild(GAMES)
                 .PostAsync(new Game 
                 { 
-                    HostPlayerId = playerId, 
-                    ConnectionCode = connection.Code 
+                    ConnectionCode = connection.Code,
+                    QuestionOptions = questionOptions
                 });
-
-            return created.Key;
+            Game game = created.Object;
+            game.Id = created.Key;
+            return game;
         }
 
         public async Task<Game> UpdateGameOptions(string gameId, QuestionOptions options)
@@ -52,10 +53,12 @@ namespace Guth.OpenTrivia.Firebase
             return game;
         }
 
-        public async Task<string> CreatePlayer(string name)
+        public async Task<Player> CreatePlayer(string name)
         {
-            FirebaseObject<Player> player = await GetChild(PLAYERS).PostAsync(new Player { Name = name });
-            return player.Key;
+            FirebaseObject<Player> created = await GetChild(PLAYERS).PostAsync(new Player { Name = name });
+            Player player = created.Object;
+            player.Id = created.Key;
+            return player;
         }
 
         public async Task AddPlayerToGame(string connectionCode, string playerId)

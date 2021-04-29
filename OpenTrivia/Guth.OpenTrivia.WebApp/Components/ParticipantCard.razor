@@ -1,0 +1,17 @@
+﻿@using MudBlazor
+
+<MudCard Elevation="5">
+    <MudCardHeader >
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6" Align="Align.Center">@Name</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudText Typo="Typo.body1" Align="Align.Center">@Points</MudText>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    [Parameter] public string Name { get; set; }
+    [Parameter] public int Points { get; set; } = default;
+}

@@ -1,5 +1,4 @@
-﻿@using Guth.OpenTrivia.GrainInterfaces
-@using Guth.OpenTrivia.Abstractions
+﻿@using Guth.OpenTrivia.Abstractions
 @using Guth.OpenTrivia.Abstractions.Enums
 
 <MudCard Elevation="5">
@@ -31,21 +30,18 @@
 </MudCard>
 
 @code {
-    private IGameGrain _gameGrain;
     private QuestionOptions _questionOptions;
-    private GameOptions _gameOptions;
 
     [Parameter]
-    public EventCallback<(GameOptions,QuestionOptions)> OnSubmit { get; set; }
+    public EventCallback<QuestionOptions> OnSubmit { get; set; }
 
     protected override void OnInitialized()
     {
         _questionOptions = new QuestionOptions();
-        _gameOptions = new GameOptions();
     }
 
     private async Task InvokeOnSubmit()
     {
-        await OnSubmit.InvokeAsync((_gameOptions, _questionOptions));
+        await OnSubmit.InvokeAsync(_questionOptions);
     }
 }

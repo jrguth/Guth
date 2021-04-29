@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Guth.OpenTrivia.Firebase\Guth.OpenTrivia.Firebase.csproj" />
+    <ProjectReference Include="..\Guth.OpenTrivia.FirebaseDB\Guth.OpenTrivia.FirebaseDB.csproj" />
   </ItemGroup>
 
 </Project>

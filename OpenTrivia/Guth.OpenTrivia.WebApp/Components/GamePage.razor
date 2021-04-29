@@ -1,0 +1,29 @@
+﻿@page "/games/{gameId}"
+@inject IDialogService DialogService
+@inject TriviaRealtimeDB RealtimeDB
+@using Guth.OpenTrivia.WebApp.Components
+@using Guth.OpenTrivia.Abstractions
+@using Guth.OpenTrivia.Abstractions.Models
+@using Guth.OpenTrivia.FirebaseDB
+@using MudBlazor
+@using Firebase.Database.Streaming
+
+<MudText Typo="Typo.h3" Color="Color.Primary" Align="Align.Center">Connection code: @Game.ConnectionCode</MudText>
+
+@code {
+    [Parameter] public Player Player { get; set; }
+    [Parameter] public Game Game { get; set; }
+
+    protected override Task OnParametersSetAsync()
+    {
+        RealtimeDB.SubscribeToGame(Game.Id, gameEvent => UpdateGameState(gameEvent));
+        return base.OnParametersSetAsync();
+    }
+
+    private void UpdateGameState(FirebaseEvent<Game> gameEvent)
+    {
+        Game = gameEvent.Object;
+        StateHasChanged();
+    }
+
+}

@@ -1,4 +1,6 @@
 ﻿using System;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Guth.OpenTrivia.Abstractions.Enums;
 
 namespace Guth.OpenTrivia.Abstractions
@@ -6,8 +8,11 @@ namespace Guth.OpenTrivia.Abstractions
     public class QuestionOptions
     {
         public int NumberOfQuestions { get; set; } = 10;
+        [JsonConverter(typeof(StringEnumConverter))]
         public QuestionDifficulty Difficulty { get; set; }
+        [JsonConverter(typeof(StringEnumConverter))]
         public QuestionType Type { get; set; }
+        [JsonConverter(typeof(StringEnumConverter))]
         public QuestionCategory Category { get; set; }
 
 
@@ -37,18 +42,6 @@ namespace Guth.OpenTrivia.Abstractions
         {
             Type = type;
             return this;
-        }
-
-        public override bool Equals(object obj)
-            => obj is QuestionOptions ? Equals(obj as QuestionOptions) : false;
-
-        private bool Equals(QuestionOptions obj)
-        {
-            return
-                NumberOfQuestions == obj.NumberOfQuestions &&
-                Difficulty == obj.Difficulty &&
-                Type == obj.Type &&
-                Category == obj.Category;
         }
     }
 }

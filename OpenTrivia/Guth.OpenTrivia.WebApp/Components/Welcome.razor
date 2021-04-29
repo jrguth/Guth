@@ -1,0 +1,16 @@
+﻿<LoadingOverlay Visible="(_player == null && !string.IsNullOrEmpty(_playerName)) || _gameLoading" />
+@if (_player != null)
+{
+    <MudGrid Justify="Justify.Center">
+        <MudItem Class="w-25 mx-auto mb-4" xs="12">
+            <MudText Align="Align.Center" Typo="Typo.h2">Welcome @(_playerName)!</MudText>
+        </MudItem>
+        <MudItem xs="10" md="5" lg="5">
+            <MudText Align="Align.Center" Typo="Typo.h6">Connect to a game</MudText>
+        </MudItem>
+        <MudItem xs="10" md="5" lg="5">
+            <MudText Align="Align.Center" Typo="Typo.h6">Start a new game</MudText>
+            <CreateGameForm OnSubmit="@((args) => CreateGame(args))"></CreateGameForm>
+        </MudItem>
+    </MudGrid>
+}

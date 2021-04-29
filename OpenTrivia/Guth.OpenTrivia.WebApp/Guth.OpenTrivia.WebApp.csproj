@@ -5,11 +5,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MudBlazor" Version="5.0.7" />
+    <PackageReference Include="MudBlazor" Version="5.0.8" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Guth.OpenTrivia.GrainInterfaces\Guth.OpenTrivia.GrainInterfaces.csproj" />
+    <ProjectReference Include="..\Guth.OpenTrivia.FirebaseDB\Guth.OpenTrivia.FirebaseDB.csproj" />
   </ItemGroup>
 
 </Project>

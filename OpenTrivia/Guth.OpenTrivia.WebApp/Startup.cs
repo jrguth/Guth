@@ -1,4 +1,3 @@
-using Guth.OpenTrivia.WebApp.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Hosting;
@@ -11,6 +10,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MudBlazor.Services;
+using Guth.OpenTrivia.WebApp.Services;
+using Guth.OpenTrivia.FirebaseDB;
 
 namespace Guth.OpenTrivia.WebApp
 {
@@ -29,8 +30,9 @@ namespace Guth.OpenTrivia.WebApp
         {
             services.AddRazorPages();
             services.AddServerSideBlazor();
-            services.AddClusterService(Configuration["Orleans:ClusterId"], Configuration["Orleans:ServiceId"]);
             services.AddMudServices();
+            //services.AddSignalR();
+            services.AddTriviaDB(Configuration["Firebase:Url"], Configuration["Firebase:AppSecret"]);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -56,6 +58,7 @@ namespace Guth.OpenTrivia.WebApp
             {
                 endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
+                //endpoints.MapHub<GameHub>("/gamehub");
             });
         }
     }

@@ -4,10 +4,10 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using Microsoft.Extensions.Configuration;
 using Firebase.Database;
-using Guth.OpenTrivia.Firebase;
+using Guth.OpenTrivia.FirebaseDB;
 using Guth.OpenTrivia.Abstractions;
 using Guth.OpenTrivia.Abstractions.Models;
-namespace Guth.OpenTrivia.Firebase.Tests
+namespace Guth.OpenTrivia.FirebaseDB.Tests
 {
     public class TriviaRealtimeDBTests
     {
@@ -48,16 +48,16 @@ namespace Guth.OpenTrivia.Firebase.Tests
         [Test]
         public async Task CreateGame_PostsNewGame_ReturnsStringKey()
         {
-            string id = await db.CreateGame("123");
-            Assert.That(id, Is.Not.Null);
+            Game game = await db.CreateGame();
+            Assert.That(game, Is.Not.Null);
         }
 
         [Test]
         public async Task UpdateQuestionOptions_GameExists_ReturnsUpdateGame()
         {
-            string gameId = await db.CreateGame("123");
+            Game game = await db.CreateGame();
             var questionOptions = new QuestionOptions();
-            Game game = await db.UpdateGameOptions(gameId, questionOptions);
+            game = await db.UpdateGameOptions(game.Id, questionOptions);
             Assert.That(game, Is.Not.Null);
             Assert.That(game.QuestionOptions, Is.EqualTo(questionOptions));
         }
@@ -65,17 +65,17 @@ namespace Guth.OpenTrivia.Firebase.Tests
         [Test]
         public async Task SubscribeToGame_OnGameUpdate_InvokesHandler()
         {
-            string playerId = await db.CreatePlayer("Test Player");
-            string gameId = await db.CreateGame(playerId);
-            string gameId2 = await db.CreateGame(playerId);
+            Player p = await db.CreatePlayer("Test Player");
+            Game gameOne = await db.CreateGame();
+            Game gameTwo = await db.CreateGame();
 
             bool gameOneHandlerInvoked = false;
             bool gameTwoHandlerInvoked = false;
 
-            db.SubscribeToGame(gameId, game => gameOneHandlerInvoked = true);
+            db.SubscribeToGame(gameOne.Id, game => gameOneHandlerInvoked = true);
 
-            await db.UpdateGameOptions(gameId, new QuestionOptions());
-            await db.UpdateGameOptions(gameId2, new QuestionOptions());
+            await db.UpdateGameOptions(gameOne.Id, new QuestionOptions());
+            await db.UpdateGameOptions(gameTwo.Id, new QuestionOptions());
 
             Assert.That(gameOneHandlerInvoked, Is.True);
             Assert.That(gameTwoHandlerInvoked, Is.False);

@@ -8,6 +8,8 @@ namespace Guth.OpenTrivia.Abstractions.Models
 {
     public class Game
     {
+        [JsonIgnore]
+        public string Id { get; set; }
         [JsonConverter(typeof(StringEnumConverter))]
         public GameState State { get; set; } = default;
         public string HostPlayerId { get; set; }

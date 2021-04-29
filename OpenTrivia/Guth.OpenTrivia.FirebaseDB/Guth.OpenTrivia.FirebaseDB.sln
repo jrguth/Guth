@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31112.23
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Guth.OpenTrivia.Firebase", "Guth.OpenTrivia.Firebase.csproj", "{EF065253-D51C-49CF-80AA-F488F63F38BB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Guth.OpenTrivia.FirebaseDB", "Guth.OpenTrivia.FirebaseDB.csproj", "{EF065253-D51C-49CF-80AA-F488F63F38BB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Guth.OpenTrivia.Firebase.Tests", "..\Guth.OpenTrivia.Firebase.Tests\Guth.OpenTrivia.Firebase.Tests.csproj", "{B12C8CBA-404F-4A15-8F0A-DDC886D966DA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Guth.OpenTrivia.FirebaseDB.Tests", "..\Guth.OpenTrivia.FirebaseDB.Tests\Guth.OpenTrivia.FirebaseDB.Tests.csproj", "{B12C8CBA-404F-4A15-8F0A-DDC886D966DA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Guth.OpenTrivia.Abstractions", "..\Guth.OpenTrivia.Abstractions\Guth.OpenTrivia.Abstractions.csproj", "{4B3B7617-9738-4B7C-AFAC-6CA73504FFEC}"
 EndProject

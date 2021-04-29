@@ -1,4 +1,4 @@
-﻿namespace Guth.OpenTrivia.Firebase.Tests
+﻿namespace Guth.OpenTrivia.FirebaseDB.Tests
 {
     public class FirebaseConfig
     {

@@ -1,4 +1,4 @@
-﻿namespace Guth.OpenTrivia.Firebase
+﻿namespace Guth.OpenTrivia.FirebaseDB
 {
     public sealed class ConnectionCode
     {

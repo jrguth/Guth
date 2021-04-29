@@ -1,77 +1,15 @@
 ﻿@page "/"
-@inject IClusterClient ClusterClient
 @inject IDialogService DialogService
-@using Guth.OpenTrivia.GrainInterfaces
-@using Guth.OpenTrivia.WebApp.Components
-@using Guth.OpenTrivia.Abstractions
-@using Guth.OpenTrivia.Abstractions.Models
-@using Orleans
+@inject TriviaRealtimeDB RealtimeDB
+@inject NavigationManager NavigationManager 
+@using Guth.OpenTrivia.FirebaseDB
 @using MudBlazor
 
-<LoadingOverlay Visible="(!_playerInitialized && !string.IsNullOrEmpty(_playerName)) || _gameLoading" />
-@if (_playerInitialized)
-{
-    <MudGrid Justify="Justify.Center">
-        <MudItem Class="w-25 mx-auto mb-4" xs="12">
-            <MudText Align="Align.Center" Typo="Typo.h2">Welcome @(_playerName)!</MudText>
-        </MudItem>
-        <MudItem xs="10" md="5" lg="5">
-            <MudText Align="Align.Center" Typo="Typo.h6">Connect to a game</MudText>
-        </MudItem>
-        <MudItem xs="10" md="5" lg="5">
-            <MudText Align="Align.Center" Typo="Typo.h6">Start a new game</MudText>
-            <CreateGameForm OnSubmit="@((args) => CreateGame(args.Item1, args.Item2))"></CreateGameForm>
-        </MudItem>
-    </MudGrid>
-}
 
-
+<div>
+    @ChildContent
+</div>
 
 @code {
-    [CascadingParameter(Name = "PlayerGrain")]
-    private IPlayerGrain _playerGrain { get; set; }
-    private IDialogReference _dialog;
-    private IGameGrain _gameGrain;
-
-    private string _playerName;
-    private bool _playerInitialized = false;
-    private bool _gameLoading = false;
-
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            IDialogReference dialog = DialogService.Show<PlayerNameDialog>("Enter a name", new DialogOptions
-            {
-                DisableBackdropClick = true,
-                Position = DialogPosition.Center
-            });
-            DialogResult result = await dialog.Result;
-            _playerName = result.Data as string;
-            StateHasChanged();
-            await Task.Delay(TimeSpan.FromSeconds(2));
-            await _playerGrain.SetName(result.Data as string);
-            _playerInitialized = true;
-            StateHasChanged();
-        }
-    }
-
-    private async Task CreateGame(GameOptions gameOptions, QuestionOptions questionOptions)
-    {
-        _gameLoading = true;
-        StateHasChanged();
-        _gameGrain = await _playerGrain.CreateGame(gameOptions, questionOptions);
-        var key = _gameGrain.GetPrimaryKey();
-        _gameLoading = false;
-        StateHasChanged();
-        await DialogService.ShowMessageBox("Game Created!", $"Game ID: {key}");
-    }
-
-    private Color GetRandomColor()
-    {
-        var colors = Enum.GetValues<Color>();
-        var selection = new Random().Next(colors.Length);
-        return colors[selection];
-    }
+    
 }
