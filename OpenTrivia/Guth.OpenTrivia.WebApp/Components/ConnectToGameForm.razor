@@ -1,0 +1,33 @@
+﻿@using Guth.OpenTrivia.Abstractions
+@using Guth.OpenTrivia.Abstractions.Enums
+
+<MudCard Elevation="5">
+    <MudCardContent>
+        <MudForm>
+            <MudTextField @ref="_connectionField" T="string" Required="true" Placeholder="Code" @bind-Value="_connectionCode"  />
+        </MudForm>
+    </MudCardContent>
+    <MudCardActions Class="justify-content-center">
+        <MudButton OnClick="InvokeOnSubmit" Variant="Variant.Filled" Color="Color.Primary">Connect</MudButton>
+    </MudCardActions>
+</MudCard>
+
+@code {
+    private string _connectionCode;
+    private MudTextField<string> _connectionField;
+
+    [Parameter]
+    public EventCallback<string> OnSubmit { get; set; }
+
+    private async Task InvokeOnSubmit()
+    {
+        if (string.IsNullOrWhiteSpace(_connectionCode))
+        {
+            _connectionField.Error = true;
+        }
+        else
+        {
+            await OnSubmit.InvokeAsync(_connectionCode);
+        }
+    }
+}

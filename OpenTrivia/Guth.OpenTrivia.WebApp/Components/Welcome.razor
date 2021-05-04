@@ -7,10 +7,11 @@
         </MudItem>
         <MudItem xs="10" md="5" lg="5">
             <MudText Align="Align.Center" Typo="Typo.h6">Connect to a game</MudText>
+            <ConnectToGameForm OnSubmit="@((args) => ConnectToGame(args))"/>
         </MudItem>
         <MudItem xs="10" md="5" lg="5">
             <MudText Align="Align.Center" Typo="Typo.h6">Start a new game</MudText>
-            <CreateGameForm OnSubmit="@((args) => CreateGame(args))"></CreateGameForm>
+            <CreateGameForm OnSubmit="@((args) => CreateGame(args))"/>
         </MudItem>
     </MudGrid>
 }

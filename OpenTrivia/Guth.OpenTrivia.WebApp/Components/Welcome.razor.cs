@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -14,6 +15,9 @@ namespace Guth.OpenTrivia.WebApp.Components
     {
         [Inject]
         public IDialogService DialogService { get; set; }
+
+        [Inject]
+        public ISnackbar Snackbar { get; set; }
 
         [Inject]
         public TriviaRealtimeDB RealtimeDB { get; set; }
@@ -42,14 +46,38 @@ namespace Guth.OpenTrivia.WebApp.Components
             }
         }
 
+        private async Task ConnectToGame(string connectionCode)
+        {
+            _gameLoading = true;
+            StateHasChanged();
+            ConnectionCode code = await RealtimeDB.GetConnectionCode(connectionCode);
+            if (code == null)
+            {
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+                Snackbar.Add("Invalid connection code", Severity.Error);
+            }
+            else
+            {
+                _game = await RealtimeDB.GetGame(code.GameId);
+                await RealtimeDB.AddPlayerToGame(_game.Id, _player.Id);
+                await DialogService.ShowMessageBox("Connected to game!", $"Game ID: {_game.Id}");
+            }
+            _gameLoading = false;
+            StateHasChanged();
+            
+        }
+
         private async Task CreateGame(QuestionOptions questionOptions)
         {
             _gameLoading = true;
             StateHasChanged();
-            _game = await RealtimeDB.CreateGame(questionOptions);
+            var cancellationSource = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+            ConnectionCode connection = await RealtimeDB.GenerateConnectionCode(cancellationSource.Token);
+            _game = await RealtimeDB.CreateGame(connection.Code, questionOptions);
+            await RealtimeDB.AddPlayerToGame(_game.Id, _player.Id);
             _gameLoading = false;
             StateHasChanged();
-            await DialogService.ShowMessageBox("Game Created!", $"Game ID: {_game.Id}");
+            await DialogService.ShowMessageBox("Game Created!", $"Connection code: {_game.ConnectionCode}");
         }
     }
 }

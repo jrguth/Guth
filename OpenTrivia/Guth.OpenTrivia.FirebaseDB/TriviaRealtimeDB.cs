@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Reactive.Linq;
@@ -16,10 +15,11 @@ namespace Guth.OpenTrivia.FirebaseDB
 {
     public class TriviaRealtimeDB
     {
-        private const string GAMES = "Games";
-        private const string PLAYERS = "Players";
-        private const string QUESTIONS = "Questions";
-        private const string CONNECTION_CODES = "ConnectionCodes";
+        public const string GAMES = "Games";
+        public const string PLAYERS = "Players";
+        public const string QUESTIONS = "Questions";
+        public const string CONNECTION_CODES = "ConnectionCodes";
+        public const string ROUNDS = "Rounds";
 
         public FirebaseClient DbClient { get; private set; }
         public TriviaRealtimeDB(FirebaseClient client)
@@ -27,21 +27,24 @@ namespace Guth.OpenTrivia.FirebaseDB
             DbClient = client;
         }
 
-        public async Task<Game> CreateGame(QuestionOptions questionOptions = null)
+        public async Task<Game> CreateGame(string connectionCode, QuestionOptions questionOptions = null)
         {
-            CancellationToken cancellationToken = new CancellationTokenSource(TimeSpan.FromSeconds(30)).Token;
-            ConnectionCode connection = await GenerateGameConnection(cancellationToken);
-
-            FirebaseObject<Game> created = await GetChild(GAMES)
-                .PostAsync(new Game 
-                { 
-                    ConnectionCode = connection.Code,
-                    QuestionOptions = questionOptions
-                });
-            Game game = created.Object;
-            game.Id = created.Key;
+            ConnectionCode connection = await GetChild(CONNECTION_CODES, connectionCode).OnceSingleAsync<ConnectionCode>();
+            var id = Guid.NewGuid().ToString();
+            var game = new Game
+            {
+                Id = id,
+                ConnectionCode = connection.Code,
+                QuestionOptions = questionOptions
+            };
+            await GetChild(GAMES, id).PutAsync(game);
+            connection.GameId = id;
+            await GetChild(CONNECTION_CODES, connectionCode).PatchAsync(connection);
             return game;
         }
+
+        public async Task<Game> GetGame(string gameId)
+            => await GetChild(GAMES, gameId).OnceSingleAsync<Game>();
 
         public async Task<Game> UpdateGameOptions(string gameId, QuestionOptions options)
         {
@@ -61,12 +64,14 @@ namespace Guth.OpenTrivia.FirebaseDB
             return player;
         }
 
-        public async Task AddPlayerToGame(string connectionCode, string playerId)
+        public async Task<Player> GetPlayer(string playerId)
+            => await GetChild(PLAYERS, playerId).OnceSingleAsync<Player>();
+
+        public async Task AddPlayerToGame(string gameId, string playerId)
         {
-            ConnectionCode code = await GetChild(CONNECTION_CODES, connectionCode).OnceSingleAsync<ConnectionCode>();
-            Game game = await GetChild(GAMES, code.GameId).OnceSingleAsync<Game>();
+            Game game = await GetChild(GAMES, gameId).OnceSingleAsync<Game>();
             game.Players.Add(playerId);
-            await GetChild(GAMES, code.GameId).PatchAsync(game);
+            await GetChild(GAMES, gameId).PatchAsync(game);
         }
 
         public async Task<Game> StartNextRound(string gameId)
@@ -75,14 +80,17 @@ namespace Guth.OpenTrivia.FirebaseDB
             if (game.Questions.Count < 1)
             {
                 game.State = GameState.Complete;
+                await GetChild(GAMES, gameId).PatchAsync(game);
             }
             else
             {
                 TriviaQuestion nextQuestion = game.Questions.Pop();
-                game.Rounds.Add(new TriviaRound(nextQuestion));
+                var round = new TriviaRound(nextQuestion);
+                game.Rounds.Add(round);
                 game.State = GameState.RoundStart;
+                await GetChild(GAMES, gameId).PatchAsync(game);
+                await GetChild(GAMES, gameId, ROUNDS).PostAsync(round);
             }
-            await GetChild(GAMES, gameId).PatchAsync(game);
             return game;
         }
 
@@ -93,7 +101,7 @@ namespace Guth.OpenTrivia.FirebaseDB
             await GetChild(GAMES, gameId).PatchAsync(game);
         }
 
-        public async Task<ConnectionCode> GenerateGameConnection(CancellationToken cancellationToken = default)
+        public async Task<ConnectionCode> GenerateConnectionCode(CancellationToken cancellationToken = default)
         {
             while (!cancellationToken.IsCancellationRequested)
             {
@@ -101,13 +109,16 @@ namespace Guth.OpenTrivia.FirebaseDB
                 ConnectionCode active = await GetChild(CONNECTION_CODES, code).OnceSingleAsync<ConnectionCode>();
                 if (active == null)
                 {
-                    var gameConnection = new ConnectionCode(code);
+                    var gameConnection = new ConnectionCode { Code = code };
                     await GetChild(CONNECTION_CODES, code).PutAsync(gameConnection);
                     return gameConnection;
                 }
             }
             throw new Exception("Failed to generate a connection code");
         }
+
+        public async Task<ConnectionCode> GetConnectionCode(string code)
+            => await GetChild(CONNECTION_CODES, code).OnceSingleAsync<ConnectionCode>();
 
         public async Task<bool> AnswerQuestion(string gameId, string playerId, string answer)
         {
@@ -124,15 +135,15 @@ namespace Guth.OpenTrivia.FirebaseDB
             return answer == currentRound.Question.CorrectAnswer;
         }
 
-        public void SubscribeToGame(string gameId, Action<FirebaseEvent<Game>> next)
+        public void SubscribeToGame(string gameId, Action<Game> next)
         {
             GetChild(GAMES)
                 .AsObservable<Game>()
                 .Where(g => g.Key == gameId)
-                .Subscribe(next);
+                .Subscribe(e => next(e.Object));
         }
 
-        private ChildQuery GetChild(params string[] segments)
+        public ChildQuery GetChild(params string[] segments)
         {
             ChildQuery query = null;
             foreach (var segment in segments)

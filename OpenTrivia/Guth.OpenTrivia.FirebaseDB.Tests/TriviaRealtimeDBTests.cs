@@ -39,23 +39,24 @@ namespace Guth.OpenTrivia.FirebaseDB.Tests
         [Test]
         public async Task GenerateConnectionCode_NoCodesAdded_AddsCodeAndReturnsString()
         {
-            ConnectionCode connection = await db.GenerateGameConnection();
+            ConnectionCode connection = await db.GenerateConnectionCode();
             Assert.That(connection, Is.Not.Null);
             Assert.That(connection.Code.Length, Is.EqualTo(4));
-            Assert.That(connection.IsActive, Is.True);
         }
 
         [Test]
         public async Task CreateGame_PostsNewGame_ReturnsStringKey()
         {
-            Game game = await db.CreateGame();
+            ConnectionCode code = await db.GenerateConnectionCode();
+            Game game = await db.CreateGame(code.Code);
             Assert.That(game, Is.Not.Null);
         }
 
         [Test]
         public async Task UpdateQuestionOptions_GameExists_ReturnsUpdateGame()
         {
-            Game game = await db.CreateGame();
+            ConnectionCode code = await db.GenerateConnectionCode();
+            Game game = await db.CreateGame(code.Code);
             var questionOptions = new QuestionOptions();
             game = await db.UpdateGameOptions(game.Id, questionOptions);
             Assert.That(game, Is.Not.Null);
@@ -66,15 +67,19 @@ namespace Guth.OpenTrivia.FirebaseDB.Tests
         public async Task SubscribeToGame_OnGameUpdate_InvokesHandler()
         {
             Player p = await db.CreatePlayer("Test Player");
-            Game gameOne = await db.CreateGame();
-            Game gameTwo = await db.CreateGame();
+            Game gameOne = await db.CreateGame((await db.GenerateConnectionCode()).Code);
+            Game gameTwo = await db.CreateGame((await db.GenerateConnectionCode()).Code);
 
             bool gameOneHandlerInvoked = false;
             bool gameTwoHandlerInvoked = false;
 
-            db.SubscribeToGame(gameOne.Id, game => gameOneHandlerInvoked = true);
+            db.SubscribeToGame(gameOne.Id, game =>
+            {
+                gameOneHandlerInvoked = true;
+            });
 
-            await db.UpdateGameOptions(gameOne.Id, new QuestionOptions());
+            //await db.UpdateGameOptions(gameOne.Id, new QuestionOptions());
+            await db.AddPlayerToGame(gameOne.Id, p.Id);
             await db.UpdateGameOptions(gameTwo.Id, new QuestionOptions());
 
             Assert.That(gameOneHandlerInvoked, Is.True);
