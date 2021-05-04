@@ -9,6 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Guth.OpenTrivia.Client\Guth.OpenTrivia.Client\Guth.OpenTrivia.Client.csproj" />
     <ProjectReference Include="..\Guth.OpenTrivia.FirebaseDB\Guth.OpenTrivia.FirebaseDB.csproj" />
   </ItemGroup>
 

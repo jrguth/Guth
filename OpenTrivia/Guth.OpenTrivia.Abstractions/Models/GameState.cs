@@ -3,7 +3,8 @@
     public enum GameState
     {
         Created,
-        RoundStart,
+        Started,
+        RoundBegin,
         RoundEnd,
         Complete
     }

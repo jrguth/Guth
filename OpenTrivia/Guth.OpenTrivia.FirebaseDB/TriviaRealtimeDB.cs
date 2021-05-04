@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,15 +29,17 @@ namespace Guth.OpenTrivia.FirebaseDB
             DbClient = client;
         }
 
-        public async Task<Game> CreateGame(string connectionCode, QuestionOptions questionOptions = null)
+        public async Task<Game> CreateGame(string connectionCode, string hostId = null, QuestionOptions questionOptions = null)
         {
             ConnectionCode connection = await GetChild(CONNECTION_CODES, connectionCode).OnceSingleAsync<ConnectionCode>();
             var id = Guid.NewGuid().ToString();
             var game = new Game
             {
                 Id = id,
+                HostPlayerId = hostId,
                 ConnectionCode = connection.Code,
-                QuestionOptions = questionOptions
+                QuestionOptions = questionOptions,
+                Players = string.IsNullOrWhiteSpace(hostId) ? null : new List<string> { hostId }
             };
             await GetChild(GAMES, id).PutAsync(game);
             connection.GameId = id;
@@ -56,11 +60,23 @@ namespace Guth.OpenTrivia.FirebaseDB
             return game;
         }
 
+        public async Task StartGame(string gameId, ImmutableList<TriviaQuestion> questions)
+        {
+            Game game = await GetChild(GAMES, gameId).OnceSingleAsync<Game>();
+            game.Questions = new Stack<TriviaQuestion>(questions);
+            game.State = GameState.Started;
+            await GetChild(GAMES, gameId).PatchAsync(game);
+        }
+
         public async Task<Player> CreatePlayer(string name)
         {
-            FirebaseObject<Player> created = await GetChild(PLAYERS).PostAsync(new Player { Name = name });
-            Player player = created.Object;
-            player.Id = created.Key;
+            var id = Guid.NewGuid().ToString();
+            var player = new Player
+            {
+                Id = id,
+                Name = name
+            };
+            await GetChild(PLAYERS, id).PutAsync(player);
             return player;
         }
 
@@ -74,6 +90,12 @@ namespace Guth.OpenTrivia.FirebaseDB
             await GetChild(GAMES, gameId).PatchAsync(game);
         }
 
+        public async Task<ICollection<Player>> GetGamePlayers(string gameId)
+        {
+            Game game = await GetChild(GAMES, gameId).OnceSingleAsync<Game>();
+            return await Task.WhenAll(game.Players.Select(async (playerId) => await GetChild(PLAYERS, playerId).OnceSingleAsync<Player>()));
+        }
+
         public async Task<Game> StartNextRound(string gameId)
         {
             Game game = await GetChild(GAMES, gameId).OnceSingleAsync<Game>();
@@ -85,9 +107,9 @@ namespace Guth.OpenTrivia.FirebaseDB
             else
             {
                 TriviaQuestion nextQuestion = game.Questions.Pop();
-                var round = new TriviaRound(nextQuestion);
+                var round = new TriviaRound { Question = nextQuestion };
                 game.Rounds.Add(round);
-                game.State = GameState.RoundStart;
+                game.State = GameState.RoundBegin;
                 await GetChild(GAMES, gameId).PatchAsync(game);
                 await GetChild(GAMES, gameId, ROUNDS).PostAsync(round);
             }
@@ -118,7 +140,7 @@ namespace Guth.OpenTrivia.FirebaseDB
         }
 
         public async Task<ConnectionCode> GetConnectionCode(string code)
-            => await GetChild(CONNECTION_CODES, code).OnceSingleAsync<ConnectionCode>();
+            => await GetChild(CONNECTION_CODES, code?.ToUpper()).OnceSingleAsync<ConnectionCode>();
 
         public async Task<bool> AnswerQuestion(string gameId, string playerId, string answer)
         {
@@ -141,6 +163,30 @@ namespace Guth.OpenTrivia.FirebaseDB
                 .AsObservable<Game>()
                 .Where(g => g.Key == gameId)
                 .Subscribe(e => next(e.Object));
+        }
+
+        public void SubscribeToGamePlayers(string gameId, Action<ICollection<Player>> next)
+        {
+            GetChild(GAMES, gameId, PLAYERS)
+                .AsObservable<string>()
+                .Subscribe(async (e) =>
+                {
+                    ICollection<Player> players = await GetGamePlayers(gameId);
+                    next(players);
+                });
+        }
+
+        public void SubscribeToGameRounds(string gameId, Action<TriviaQuestion> next)
+        {
+            GetChild(GAMES, gameId, ROUNDS)
+                .AsObservable<TriviaRound>()
+                .Subscribe(e =>
+                {
+                    if (e.Object != null)
+                    {
+                        next(e.Object.Question);
+                    }
+                });
         }
 
         public ChildQuery GetChild(params string[] segments)

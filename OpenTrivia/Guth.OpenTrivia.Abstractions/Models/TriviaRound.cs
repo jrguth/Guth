@@ -4,12 +4,7 @@ namespace Guth.OpenTrivia.Abstractions.Models
 {
     public class TriviaRound
     {
-        public TriviaQuestion Question { get; private set; }
+        public TriviaQuestion Question { get; set; }
         public ICollection<TriviaAnswer> Answers { get; set; } = new List<TriviaAnswer>();
-
-        public TriviaRound(TriviaQuestion question)
-        {
-            Question = question;
-        }
     }
 }

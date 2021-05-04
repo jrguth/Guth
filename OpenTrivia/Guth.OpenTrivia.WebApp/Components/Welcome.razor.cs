@@ -14,6 +14,9 @@ namespace Guth.OpenTrivia.WebApp.Components
     public partial class Welcome
     {
         [Inject]
+        public NavigationManager NavManager { get; set; }
+
+        [Inject]
         public IDialogService DialogService { get; set; }
 
         [Inject]
@@ -40,44 +43,42 @@ namespace Guth.OpenTrivia.WebApp.Components
                 });
                 DialogResult result = await dialog.Result;
                 _playerName = result.Data as string;
-                StateHasChanged();
+                await InvokeAsync(StateHasChanged);
                 _player = await RealtimeDB.CreatePlayer(_playerName);
-                StateHasChanged();
+                await InvokeAsync(StateHasChanged);
             }
         }
 
         private async Task ConnectToGame(string connectionCode)
         {
             _gameLoading = true;
-            StateHasChanged();
+            await InvokeAsync(StateHasChanged);
             ConnectionCode code = await RealtimeDB.GetConnectionCode(connectionCode);
             if (code == null)
             {
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
                 Snackbar.Add("Invalid connection code", Severity.Error);
+                _gameLoading = false;
+                await InvokeAsync(StateHasChanged);
             }
             else
             {
                 _game = await RealtimeDB.GetGame(code.GameId);
                 await RealtimeDB.AddPlayerToGame(_game.Id, _player.Id);
-                await DialogService.ShowMessageBox("Connected to game!", $"Game ID: {_game.Id}");
+                NavManager.NavigateTo($"/games/{_game.Id}/{_player.Id}");
             }
-            _gameLoading = false;
-            StateHasChanged();
-            
         }
 
         private async Task CreateGame(QuestionOptions questionOptions)
         {
             _gameLoading = true;
-            StateHasChanged();
+            await InvokeAsync(StateHasChanged);
             var cancellationSource = new CancellationTokenSource(TimeSpan.FromSeconds(15));
             ConnectionCode connection = await RealtimeDB.GenerateConnectionCode(cancellationSource.Token);
-            _game = await RealtimeDB.CreateGame(connection.Code, questionOptions);
-            await RealtimeDB.AddPlayerToGame(_game.Id, _player.Id);
+            _game = await RealtimeDB.CreateGame(connection.Code, _player.Id, questionOptions);
+            NavManager.NavigateTo($"/games/{_game.Id}/{_player.Id}");
             _gameLoading = false;
-            StateHasChanged();
-            await DialogService.ShowMessageBox("Game Created!", $"Connection code: {_game.ConnectionCode}");
+            await InvokeAsync(StateHasChanged);
         }
     }
 }

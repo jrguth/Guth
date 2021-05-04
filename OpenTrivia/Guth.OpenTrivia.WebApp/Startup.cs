@@ -12,6 +12,8 @@ using System.Threading.Tasks;
 using MudBlazor.Services;
 using Guth.OpenTrivia.WebApp.Services;
 using Guth.OpenTrivia.FirebaseDB;
+using Guth.OpenTrivia.Abstractions;
+using Guth.OpenTrivia.Client;
 
 namespace Guth.OpenTrivia.WebApp
 {
@@ -31,7 +33,7 @@ namespace Guth.OpenTrivia.WebApp
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddMudServices();
-            //services.AddSignalR();
+            services.AddSingleton<IOpenTriviaClient, OpenTriviaClient>();
             services.AddTriviaDB(Configuration["Firebase:Url"], Configuration["Firebase:AppSecret"]);
         }
 
@@ -58,7 +60,6 @@ namespace Guth.OpenTrivia.WebApp
             {
                 endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
-                //endpoints.MapHub<GameHub>("/gamehub");
             });
         }
     }

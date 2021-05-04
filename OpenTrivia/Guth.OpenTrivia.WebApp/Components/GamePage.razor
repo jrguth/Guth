@@ -1,28 +1,156 @@
-﻿@page "/games/{gameId}"
+﻿@page "/games/{gameId}/{playerId}"
 @inject IDialogService DialogService
+@inject ISnackbar Snackbar
 @inject TriviaRealtimeDB RealtimeDB
+@inject NavigationManager NavManager 
+@inject IOpenTriviaClient OpenTriviaClient
+@using System.Collections.Immutable
 @using Guth.OpenTrivia.WebApp.Components
 @using Guth.OpenTrivia.Abstractions
 @using Guth.OpenTrivia.Abstractions.Models
 @using Guth.OpenTrivia.FirebaseDB
 @using MudBlazor
 
-<MudText Typo="Typo.h3" Color="Color.Primary" Align="Align.Center">Connection code: @Game.ConnectionCode</MudText>
-
+<LoadingOverlay Visible="_initialLoad" />
+@if(!_initialLoad)
+{
+    <MudGrid Justify="Justify.Center">
+        <MudItem xs="12">
+            <MudText Align="Align.Center" Typo="Typo.h4" GutterBottom="true">Connection Code: @_game.ConnectionCode</MudText>
+        </MudItem>
+        @if (PlayerId == _game.HostPlayerId && _game.State == GameState.Created)
+        {
+            <MudItem xs="12" Class="d-flex justify-center">
+                <MudButton OnClick="StartGame" Variant="Variant.Filled" Color="Color.Primary">Start Game</MudButton>
+            </MudItem>
+        }
+        @if (_game.State == GameState.Created || _game.State == GameState.RoundEnd)
+        {
+            @foreach (Player player in _players)
+            {
+                <MudItem xs="10" md="6" lg="4" Class="d-flex flex-column">
+                    <ParticipantCard Name="@player.Name" Points="0" />
+                </MudItem>
+            }
+        }
+        else if (_game.State == GameState.Started)
+        {
+            <MudItem xs="12" Class="d-flex justify-center">
+                <MudText Align="Align.Center" Typo="Typo.h4" Color="Color.Primary">Ready up! Game is about to start...</MudText>
+            </MudItem>
+        }
+        else if (_game.State == GameState.RoundBegin)
+        {
+            if (_answered)
+            {
+                <MudItem xs="12" Class="d-flex justify-center">
+                    <MudText Align="Align.Center" Typo="Typo.h4" Color="Color.Secondary">Waiting for round complete, sit tight!</MudText>
+                </MudItem>
+            }
+            else
+            {
+                <MudItem xs="12" Class="d-flex justify-center">
+                    <MudText Align="Align.Center" Typo="Typo.h4" Color="Color.Primary">@_game.Rounds.LastOrDefault().Question.Question</MudText>
+                </MudItem>
+                foreach (string answer in ScrambleAnswers())
+                {
+                    <MudItem xs="12" md="6" lg="6" Class="d-flex justify-center">
+                        <MudButton Variant="Variant.Outlined" FullWidth="true" Size=Size.Large OnClick="async() => await SubmitAnswer(answer)">@answer</MudButton>
+                    </MudItem>
+                }
+            }
+        }
+    </MudGrid>
+}
 @code {
-    [Parameter] public Player Player { get; set; }
-    [Parameter] public Game Game { get; set; }
+    [Parameter]
+    public string GameId { get; set; }
+    [Parameter]
+    public string PlayerId { get; set; }
 
-    protected override Task OnParametersSetAsync()
+    private bool _initialLoad = true;
+    private Player _player { get; set; }
+    private Game _game { get; set; }
+    private ICollection<Player> _players;
+    private TriviaQuestion _question;
+    private bool _answered = false;
+
+    protected async override Task OnInitializedAsync()
     {
-        RealtimeDB.SubscribeToGame(Game.Id, game => UpdateGameState(game));
-        return base.OnParametersSetAsync();
+        _game = await RealtimeDB.GetGame(GameId);
+        _player = await RealtimeDB.GetPlayer(PlayerId);
+        if (_game is null || _player is null || !_game.Players.Contains(_player.Id))
+        {
+            NavManager.NavigateTo("/");
+            return;
+        }
+        _players = await RealtimeDB.GetGamePlayers(GameId);
+        _question = _game.Rounds.LastOrDefault()?.Question;
+        _answered = _game.Rounds.LastOrDefault()?.Answers?.Any(a => a.PlayerId == PlayerId) ?? false;
+        RealtimeDB.SubscribeToGame(GameId, async (game) => await UpdateGameState(game));
+        RealtimeDB.SubscribeToGamePlayers(GameId, async (players) => await UpdatePlayerList(players));
+        RealtimeDB.SubscribeToGameRounds(GameId, async (question) => await UpdateQuestion(question));
+        _initialLoad = false;
+        await InvokeAsync(StateHasChanged);
     }
 
-    private void UpdateGameState(Game updated)
+    private async Task StartGame()
     {
-        Game = updated;
-        StateHasChanged();
+        ImmutableList<TriviaQuestion> questions = await OpenTriviaClient.GetTriviaQuestions(_game.QuestionOptions);
+        await RealtimeDB.StartGame(GameId, questions);
     }
 
+    private async Task UpdateGameState(Game updated)
+    {
+        //Snackbar.Add($"Game has updated: {updated.State}");
+        _game = updated;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task UpdatePlayerList(ICollection<Player> updatedPlayers)
+    {
+        foreach (var player in updatedPlayers.Where(p => _players.FirstOrDefault(p1 => p1.Id == p.Id) == null))
+        {
+            Snackbar.Add($"{player.Name} has joined the game!", Severity.Success);
+        }
+
+        foreach (var player in _players.Where(p => updatedPlayers.FirstOrDefault(p1 => p1.Id == p.Id) == null))
+        {
+            Snackbar.Add($"{player.Name} has left the game", Severity.Info);
+        }
+        _players = updatedPlayers;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task SubmitAnswer(string answer)
+    {
+        bool correct = await RealtimeDB.AnswerQuestion(GameId, PlayerId, answer);
+        _answered = true;
+        await InvokeAsync(StateHasChanged);
+        if (correct)
+        {
+            Snackbar.Add("Correct!", Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add("Incorrect!", Severity.Error);
+        }
+    }
+
+    private async Task UpdateQuestion(TriviaQuestion question)
+    {
+        if (_question.Question != question.Question)
+        {
+            _answered = false;
+            _question = question;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private IEnumerable<string> ScrambleAnswers()
+    {
+        var scrambled = _question.IncorrectAnswers.ToList();
+        scrambled.Insert(new Random().Next(_question.IncorrectAnswers.Count()), _question.CorrectAnswer);
+        return scrambled;
+    }
 }
