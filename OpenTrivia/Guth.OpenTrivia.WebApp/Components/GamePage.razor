@@ -15,51 +15,48 @@
 @if(!_initialLoad)
 {
     <MudGrid Justify="Justify.Center">
-        <MudItem xs="12">
-            <MudText Align="Align.Center" Typo="Typo.h4" GutterBottom="true">Connection Code: @_game.ConnectionCode</MudText>
+    <MudItem xs="12">
+        <MudText Align="Align.Center" Typo="Typo.h4" GutterBottom="true">Connection Code: @_game.ConnectionCode</MudText>
+    </MudItem>
+    @if (PlayerId == _game.HostPlayerId && _game.State == GameState.Created)
+    {
+        <MudItem xs="12" Class="d-flex justify-center">
+            <MudButton OnClick="StartGame" Variant="Variant.Filled" Color="Color.Primary">Start Game</MudButton>
         </MudItem>
-        @if (PlayerId == _game.HostPlayerId && _game.State == GameState.Created)
+    }
+    @if (_game.State == GameState.Created || _game.State == GameState.RoundEnd || (_game.State == GameState.RoundBegin && _answered))
+    {
+        @foreach (Player player in _players)
         {
-            <MudItem xs="12" Class="d-flex justify-center">
-                <MudButton OnClick="StartGame" Variant="Variant.Filled" Color="Color.Primary">Start Game</MudButton>
+            <MudItem xs="10" md="6" lg="4" Class="d-flex flex-column">
+                <ParticipantCard Name="@player.Name" Points="0" />
             </MudItem>
-        }
-        @if (_game.State == GameState.Created || _game.State == GameState.RoundEnd)
-        {
-            @foreach (Player player in _players)
-            {
-                <MudItem xs="10" md="6" lg="4" Class="d-flex flex-column">
-                    <ParticipantCard Name="@player.Name" Points="0" />
-                </MudItem>
-            }
-        }
-        else if (_game.State == GameState.Started)
-        {
-            <MudItem xs="12" Class="d-flex justify-center">
-                <MudText Align="Align.Center" Typo="Typo.h4" Color="Color.Primary">Ready up! Game is about to start...</MudText>
-            </MudItem>
-        }
-        else if (_game.State == GameState.RoundBegin)
-        {
-            if (_answered)
+            if (_answered && _game.State == GameState.RoundBegin)
             {
                 <MudItem xs="12" Class="d-flex justify-center">
                     <MudText Align="Align.Center" Typo="Typo.h4" Color="Color.Secondary">Waiting for round complete, sit tight!</MudText>
                 </MudItem>
             }
-            else
-            {
-                <MudItem xs="12" Class="d-flex justify-center">
-                    <MudText Align="Align.Center" Typo="Typo.h4" Color="Color.Primary">@_game.Rounds.LastOrDefault().Question.Question</MudText>
-                </MudItem>
-                foreach (string answer in ScrambleAnswers())
-                {
-                    <MudItem xs="12" md="6" lg="6" Class="d-flex justify-center">
-                        <MudButton Variant="Variant.Outlined" FullWidth="true" Size=Size.Large OnClick="async() => await SubmitAnswer(answer)">@answer</MudButton>
-                    </MudItem>
-                }
-            }
         }
+    }
+    else if (_game.State == GameState.Started)
+    {
+        <MudItem xs="12" Class="d-flex justify-center">
+            <MudText Align="Align.Center" Typo="Typo.h4" Color="Color.Primary">Ready up! Game is about to start...</MudText>
+        </MudItem>
+    }
+    else if (_game.State == GameState.RoundBegin)
+    {
+        <MudItem xs="12" Class="d-flex justify-center">
+            <MudText Align="Align.Center" Typo="Typo.h4" Color="Color.Primary">@_game.Rounds.LastOrDefault().Question.Question</MudText>
+        </MudItem>
+        foreach (string answer in _answers)
+        {
+            <MudItem xs="12" md="6" lg="6" Class="d-flex justify-center">
+                <MudButton Variant="Variant.Outlined" FullWidth="true" Size=Size.Large OnClick="async() => await SubmitAnswer(answer)">@answer</MudButton>
+            </MudItem>
+        }
+    }
     </MudGrid>
 }
 @code {
@@ -74,6 +71,7 @@
     private ICollection<Player> _players;
     private TriviaQuestion _question;
     private bool _answered = false;
+    private IEnumerable<string> _answers = new List<string>();
 
     protected async override Task OnInitializedAsync()
     {
@@ -86,12 +84,13 @@
         }
         _players = await RealtimeDB.GetGamePlayers(GameId);
         _question = _game.Rounds.LastOrDefault()?.Question;
+        _answers = ScrambleAnswers();
         _answered = _game.Rounds.LastOrDefault()?.Answers?.Any(a => a.PlayerId == PlayerId) ?? false;
         RealtimeDB.SubscribeToGame(GameId, async (game) => await UpdateGameState(game));
         RealtimeDB.SubscribeToGamePlayers(GameId, async (players) => await UpdatePlayerList(players));
         RealtimeDB.SubscribeToGameRounds(GameId, async (question) => await UpdateQuestion(question));
         _initialLoad = false;
-        await InvokeAsync(StateHasChanged);
+
     }
 
     private async Task StartGame()
@@ -143,6 +142,7 @@
         {
             _answered = false;
             _question = question;
+            _answers = ScrambleAnswers();
             await InvokeAsync(StateHasChanged);
         }
     }
