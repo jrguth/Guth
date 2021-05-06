@@ -1,6 +1,6 @@
 ﻿using System;
 using Newtonsoft.Json;
-using System.Collections.Immutable;
+using System.Collections.Generic;
 using Guth.OpenTrivia.Abstractions.Enums;
 namespace Guth.OpenTrivia.Abstractions.Models
 {
@@ -18,8 +18,8 @@ namespace Guth.OpenTrivia.Abstractions.Models
         public string Question { get; set; }
         [JsonProperty("correct_answer")] 
         public string CorrectAnswer { get; set; }
-        [JsonProperty("incorrect_answers")] 
-        public ImmutableArray<string> IncorrectAnswers { get; set; }
+        [JsonProperty("incorrect_answers")]
+        public IReadOnlyCollection<string> IncorrectAnswers { get; set; } = new List<string>();
 
         public override int GetHashCode() => _key.GetHashCode();
     }

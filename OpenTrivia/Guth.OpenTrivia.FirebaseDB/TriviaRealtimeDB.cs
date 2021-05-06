@@ -22,6 +22,7 @@ namespace Guth.OpenTrivia.FirebaseDB
         public const string QUESTIONS = "Questions";
         public const string CONNECTION_CODES = "ConnectionCodes";
         public const string ROUNDS = "Rounds";
+        public const string RESULTS = "Results";
 
         public FirebaseClient DbClient { get; private set; }
         public TriviaRealtimeDB(FirebaseClient client)
@@ -68,6 +69,16 @@ namespace Guth.OpenTrivia.FirebaseDB
             await GetChild(GAMES, gameId).PatchAsync(game);
         }
 
+        public async Task<TriviaRound> GetCurrentRound(string gameId)
+        {
+            Game game = await GetGame(gameId);
+            return new TriviaRound
+            {
+                RoundNumber = game.RoundNumber,
+                Question = game.Questions.ElementAtOrDefault(game.RoundNumber - 1)
+            };
+        }
+
         public async Task<Player> CreatePlayer(string name)
         {
             var id = Guid.NewGuid().ToString();
@@ -87,6 +98,11 @@ namespace Guth.OpenTrivia.FirebaseDB
         {
             Game game = await GetChild(GAMES, gameId).OnceSingleAsync<Game>();
             game.Players.Add(playerId);
+            game.Results.Add(new PlayerScore
+            {
+                PlayerId = playerId,
+                Points = 0
+            });
             await GetChild(GAMES, gameId).PatchAsync(game);
         }
 
@@ -99,15 +115,19 @@ namespace Guth.OpenTrivia.FirebaseDB
         public async Task<Game> StartNextRound(string gameId)
         {
             Game game = await GetChild(GAMES, gameId).OnceSingleAsync<Game>();
-            if (game.Questions.Count < 1)
+            if (game.RoundNumber >= game.Questions.Count)
             {
                 game.State = GameState.Complete;
                 await GetChild(GAMES, gameId).PatchAsync(game);
             }
             else
             {
-                TriviaQuestion nextQuestion = game.Questions.Pop();
-                var round = new TriviaRound { Question = nextQuestion };
+                TriviaQuestion nextQuestion = game.Questions.ElementAt(++game.RoundNumber);
+                var round = new TriviaRound
+                {
+                    RoundNumber = game.RoundNumber,
+                    Question = nextQuestion
+                };
                 game.Rounds.Add(round);
                 game.State = GameState.RoundBegin;
                 await GetChild(GAMES, gameId).PatchAsync(game);
@@ -151,13 +171,29 @@ namespace Guth.OpenTrivia.FirebaseDB
             };
 
             Game game = await GetChild(GAMES, gameId).OnceSingleAsync<Game>();
+
             var currentRound = game.Rounds.LastOrDefault();
             currentRound?.Answers.Add(triviaAnswer);
+            bool correct = answer == currentRound.Question.CorrectAnswer;
+            if (correct)
+            {
+                game.Results.FirstOrDefault(r => r.PlayerId == playerId).Points++;
+            }
             await GetChild(GAMES, gameId).PatchAsync(game);
-            return answer == currentRound.Question.CorrectAnswer;
+            return correct;
         }
 
-        public void SubscribeToGame(string gameId, Action<Game> next)
+        public async Task CompleteGame(string gameId)
+        {
+            Game game = await GetGame(gameId);
+            ICollection<Player> players = await GetGamePlayers(gameId);
+            foreach (var player in players)
+            {
+
+            }
+        }
+
+        public void OnGameUpdate(string gameId, Action<Game> next)
         {
             GetChild(GAMES)
                 .AsObservable<Game>()
@@ -165,7 +201,7 @@ namespace Guth.OpenTrivia.FirebaseDB
                 .Subscribe(e => next(e.Object));
         }
 
-        public void SubscribeToGamePlayers(string gameId, Action<ICollection<Player>> next)
+        public void OnPlayerAddedOrRemoved(string gameId, Action<ICollection<Player>> next)
         {
             GetChild(GAMES, gameId, PLAYERS)
                 .AsObservable<string>()
@@ -176,7 +212,7 @@ namespace Guth.OpenTrivia.FirebaseDB
                 });
         }
 
-        public void SubscribeToGameRounds(string gameId, Action<TriviaQuestion> next)
+        public void OnRoundUpdate(string gameId, Action<TriviaRound> next)
         {
             GetChild(GAMES, gameId, ROUNDS)
                 .AsObservable<TriviaRound>()
@@ -184,8 +220,19 @@ namespace Guth.OpenTrivia.FirebaseDB
                 {
                     if (e.Object != null)
                     {
-                        next(e.Object.Question);
+                        next(e.Object);
                     }
+                });
+        }
+
+        public void OnScoresUpdated(string gameId, Action<ICollection<PlayerScore>> next)
+        {
+            GetChild(GAMES, gameId, ROUNDS)
+                .AsObservable<PlayerScore>()
+                .Subscribe(async (e) =>
+                {
+                    IEnumerable<PlayerScore> scores = (await GetGame(gameId)).Results;
+                    next(scores.ToList());
                 });
         }
 

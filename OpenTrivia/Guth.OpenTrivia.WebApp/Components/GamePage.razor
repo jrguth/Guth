@@ -24,19 +24,25 @@
             <MudButton OnClick="StartGame" Variant="Variant.Filled" Color="Color.Primary">Start Game</MudButton>
         </MudItem>
     }
+    else if (_game.State == GameState.Created)
+    {
+        <MudItem xs="12" Class="d-flex justify-center">
+            <MudText Align="Align.Center" Typo="Typo.h4" Color="Color.Secondary">Waiting for host to start game...</MudText>
+        </MudItem>
+    }
     @if (_game.State == GameState.Created || _game.State == GameState.RoundEnd || (_game.State == GameState.RoundBegin && _answered))
     {
-        @foreach (Player player in _players)
+        @foreach (PlayerScore score in _results)
         {
             <MudItem xs="10" md="6" lg="4" Class="d-flex flex-column">
-                <ParticipantCard Name="@player.Name" Points="0" />
+                <ParticipantCard Name="@_players.FirstOrDefault(p => p.Id == score.PlayerId).Name" Points="score.Points" />
             </MudItem>
-            if (_answered && _game.State == GameState.RoundBegin)
-            {
-                <MudItem xs="12" Class="d-flex justify-center">
-                    <MudText Align="Align.Center" Typo="Typo.h4" Color="Color.Secondary">Waiting for round complete, sit tight!</MudText>
-                </MudItem>
-            }
+        }
+        if (_answered && _game.State == GameState.RoundBegin)
+        {
+            <MudItem xs="12" Class="d-flex justify-center">
+                <MudText Align="Align.Center" Typo="Typo.h4" Color="Color.Secondary">Waiting for round complete, sit tight!</MudText>
+            </MudItem>
         }
     }
     else if (_game.State == GameState.Started)
@@ -48,7 +54,10 @@
     else if (_game.State == GameState.RoundBegin)
     {
         <MudItem xs="12" Class="d-flex justify-center">
-            <MudText Align="Align.Center" Typo="Typo.h4" Color="Color.Primary">@_game.Rounds.LastOrDefault().Question.Question</MudText>
+            <MudText Align="Align.Center" Typo="Typo.h3">Round @_game.RoundNumber</MudText>
+        </MudItem>
+        <MudItem xs="12" Class="d-flex justify-center">
+            <MudText Align="Align.Center" Typo="Typo.h4" Color="Color.Primary">@_currentRound.Question.Question</MudText>
         </MudItem>
         foreach (string answer in _answers)
         {
@@ -70,8 +79,10 @@
     private Game _game { get; set; }
     private ICollection<Player> _players;
     private TriviaQuestion _question;
+    private TriviaRound _currentRound;
     private bool _answered = false;
-    private IEnumerable<string> _answers = new List<string>();
+    private List<string> _answers = new List<string>();
+    private ICollection<PlayerScore> _results = new List<PlayerScore>();
 
     protected async override Task OnInitializedAsync()
     {
@@ -82,13 +93,15 @@
             NavManager.NavigateTo("/");
             return;
         }
+        _results = _game.Results;
         _players = await RealtimeDB.GetGamePlayers(GameId);
-        _question = _game.Rounds.LastOrDefault()?.Question;
-        _answers = ScrambleAnswers();
+        _currentRound = await RealtimeDB.GetCurrentRound(GameId);
+        ShuffleAnswers();
         _answered = _game.Rounds.LastOrDefault()?.Answers?.Any(a => a.PlayerId == PlayerId) ?? false;
-        RealtimeDB.SubscribeToGame(GameId, async (game) => await UpdateGameState(game));
-        RealtimeDB.SubscribeToGamePlayers(GameId, async (players) => await UpdatePlayerList(players));
-        RealtimeDB.SubscribeToGameRounds(GameId, async (question) => await UpdateQuestion(question));
+        RealtimeDB.OnGameUpdate(GameId, async (game) => await UpdateGameState(game));
+        RealtimeDB.OnPlayerAddedOrRemoved(GameId, async (players) => await UpdatePlayerList(players));
+        RealtimeDB.OnRoundUpdate(GameId, async (round) => await UpdateRound(round));
+        RealtimeDB.OnScoresUpdated(GameId, async (scores) => await UpdateGameScores(scores));
         _initialLoad = false;
 
     }
@@ -103,6 +116,12 @@
     {
         //Snackbar.Add($"Game has updated: {updated.State}");
         _game = updated;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task UpdateGameScores(ICollection<PlayerScore> updatedScores)
+    {
+        _results = updatedScores;
         await InvokeAsync(StateHasChanged);
     }
 
@@ -136,21 +155,25 @@
         }
     }
 
-    private async Task UpdateQuestion(TriviaQuestion question)
+    private async Task UpdateRound(TriviaRound round)
     {
-        if (_question.Question != question.Question)
+        if (_currentRound.RoundNumber != round.RoundNumber)
         {
             _answered = false;
-            _question = question;
-            _answers = ScrambleAnswers();
+            _currentRound = round;
+            ShuffleAnswers();
             await InvokeAsync(StateHasChanged);
         }
     }
 
-    private IEnumerable<string> ScrambleAnswers()
+    private void ShuffleAnswers()
     {
-        var scrambled = _question.IncorrectAnswers.ToList();
-        scrambled.Insert(new Random().Next(_question.IncorrectAnswers.Count()), _question.CorrectAnswer);
-        return scrambled;
+        if (_currentRound != null)
+        {
+            var answers = _currentRound.Question.IncorrectAnswers.ToList();
+            answers.Add(_currentRound.Question.CorrectAnswer);
+            answers.Shuffle();
+            _answers = answers;
+        }
     }
 }
