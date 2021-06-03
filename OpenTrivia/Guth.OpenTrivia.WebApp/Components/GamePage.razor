@@ -69,11 +69,14 @@
     </MudGrid>
 }
 @code {
+    [Inject]
+    IHttpClientFactory HttpClientFactory { get; set; }
     [Parameter]
     public string GameId { get; set; }
     [Parameter]
     public string PlayerId { get; set; }
 
+    private HttpClient _httpClient;
     private bool _initialLoad = true;
     private Player _player { get; set; }
     private Game _game { get; set; }
@@ -83,6 +86,11 @@
     private bool _answered = false;
     private List<string> _answers = new List<string>();
     private ICollection<PlayerScore> _results = new List<PlayerScore>();
+
+    protected override void OnParametersSet()
+    {
+        _httpClient = HttpClientFactory.CreateClient("BaseApiClient");
+    }
 
     protected async override Task OnInitializedAsync()
     {
@@ -96,7 +104,7 @@
         _results = _game.Results;
         _players = await RealtimeDB.GetGamePlayers(GameId);
         _currentRound = await RealtimeDB.GetCurrentRound(GameId);
-        ShuffleAnswers();
+        @*ShuffleAnswers();*@
         _answered = _game.Rounds.LastOrDefault()?.Answers?.Any(a => a.PlayerId == PlayerId) ?? false;
         RealtimeDB.OnGameUpdate(GameId, async (game) => await UpdateGameState(game));
         RealtimeDB.OnPlayerAddedOrRemoved(GameId, async (players) => await UpdatePlayerList(players));
@@ -108,8 +116,8 @@
 
     private async Task StartGame()
     {
-        ImmutableList<TriviaQuestion> questions = await OpenTriviaClient.GetTriviaQuestions(_game.QuestionOptions);
-        await RealtimeDB.StartGame(GameId, questions);
+        var response = await _httpClient.PostAsync($"/api/v1/games/{GameId}/start?playerId={PlayerId}", null);
+        //
     }
 
     private async Task UpdateGameState(Game updated)

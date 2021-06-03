@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31112.23
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Guth.OpenTrivia.GameConductor", "Guth.OpenTrivia.GameConductor\Guth.OpenTrivia.GameConductor.csproj", "{B3448C36-A899-456F-AC6C-DA8B5A687C99}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Guth.OpenTrivia.FirebaseDB", "..\Guth.OpenTrivia.FirebaseDB\Guth.OpenTrivia.FirebaseDB.csproj", "{5607E04B-0049-4702-9AF2-0551FD21D472}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B3448C36-A899-456F-AC6C-DA8B5A687C99}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3448C36-A899-456F-AC6C-DA8B5A687C99}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3448C36-A899-456F-AC6C-DA8B5A687C99}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3448C36-A899-456F-AC6C-DA8B5A687C99}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5607E04B-0049-4702-9AF2-0551FD21D472}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5607E04B-0049-4702-9AF2-0551FD21D472}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5607E04B-0049-4702-9AF2-0551FD21D472}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5607E04B-0049-4702-9AF2-0551FD21D472}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4D6A7EC1-7033-41E3-AD37-D467A64B372B}
+	EndGlobalSection
+EndGlobal

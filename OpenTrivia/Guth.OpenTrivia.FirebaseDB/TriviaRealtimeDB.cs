@@ -139,7 +139,9 @@ namespace Guth.OpenTrivia.FirebaseDB
         public async Task EndRound(string gameId)
         {
             Game game = await GetChild(GAMES, gameId).OnceSingleAsync<Game>();
-            game.State = GameState.RoundEnd;
+            game.State = game.RoundNumber >= game.Questions.Count
+                ? GameState.Complete
+                : GameState.RoundEnd;
             await GetChild(GAMES, gameId).PatchAsync(game);
         }
 
@@ -181,16 +183,6 @@ namespace Guth.OpenTrivia.FirebaseDB
             }
             await GetChild(GAMES, gameId).PatchAsync(game);
             return correct;
-        }
-
-        public async Task CompleteGame(string gameId)
-        {
-            Game game = await GetGame(gameId);
-            ICollection<Player> players = await GetGamePlayers(gameId);
-            foreach (var player in players)
-            {
-
-            }
         }
 
         public void OnGameUpdate(string gameId, Action<Game> next)

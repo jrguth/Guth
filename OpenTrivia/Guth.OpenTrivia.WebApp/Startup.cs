@@ -1,19 +1,23 @@
+using System;
+using System.Net.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using MudBlazor.Services;
-using Guth.OpenTrivia.WebApp.Services;
+using Hangfire;
+using Hangfire.Dashboard;
+using Hangfire.SqlServer;
+using Guth.OpenTrivia.WebApp.Workers;
 using Guth.OpenTrivia.FirebaseDB;
 using Guth.OpenTrivia.Abstractions;
 using Guth.OpenTrivia.Client;
+using Microsoft.OpenApi.Models;
+using Newtonsoft.Json.Converters;
+using Swashbuckle.AspNetCore;
 
 namespace Guth.OpenTrivia.WebApp
 {
@@ -30,11 +34,39 @@ namespace Guth.OpenTrivia.WebApp
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddRazorPages();
+            services.AddRazorPages().AddNewtonsoftJson();
             services.AddServerSideBlazor();
+            services.AddMvc(opts => opts.EnableEndpointRouting = false)
+                .AddNewtonsoftJson();
             services.AddMudServices();
             services.AddSingleton<IOpenTriviaClient, OpenTriviaClient>();
             services.AddTriviaDB(Configuration["Firebase:Url"], Configuration["Firebase:AppSecret"]);
+            services.AddHangfire(configuration => configuration
+                .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UseSqlServerStorage(Configuration.GetConnectionString("HangfireConnection"), new SqlServerStorageOptions
+                {
+                    CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+                    SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+                    QueuePollInterval = TimeSpan.Zero,
+                    UseRecommendedIsolationLevel = true,
+                    DisableGlobalLocks = true
+                }));
+            services.AddHangfireServer();
+            services.AddHttpClient("BaseApiClient", c => c.BaseAddress = new Uri(Configuration["Urls:BaseUrl"]));
+            services.AddControllers().AddNewtonsoftJson(options => options.SerializerSettings.Converters.Add(new StringEnumConverter()));
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo 
+                { 
+                    Title = "Guth.OpenTrivia.WebApp API", 
+                    Version = "v1" 
+                });
+                c.EnableAnnotations();
+                c.DescribeAllParametersInCamelCase();
+            });
+            services.AddSwaggerGenNewtonsoftSupport();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -43,6 +75,10 @@ namespace Guth.OpenTrivia.WebApp
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Guth.OpenTrivia.WebApp API V1");
+                });
             }
             else
             {
@@ -54,12 +90,16 @@ namespace Guth.OpenTrivia.WebApp
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
+            app.UseMvcWithDefaultRoute();
             app.UseRouting();
-
+            app.UseHangfireDashboard();
+            app.UseSwagger();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
+                endpoints.MapHangfireDashboard();
+                endpoints.MapSwagger();
             });
         }
     }
