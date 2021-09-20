@@ -22,9 +22,4 @@
             .OrderBy(poem => poem.Title);
         StateHasChanged();
     }
-
-    private void NavigateToTitle(string title)
-    {
-        Nav.NavigateTo($"/titles/{title}");
-    }
 }

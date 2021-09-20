@@ -22,12 +22,6 @@
     private async Task GetRandomPoem()
     {
         _poem = (await Client.GetRandomTitles(1)).First();
-        Console.WriteLine(_poem.Author);
         StateHasChanged();
-    }
-
-    private void NavigateToAuthor(string author)
-    {
-        Nav.NavigateTo($"/authors/{author}");
     }
 }

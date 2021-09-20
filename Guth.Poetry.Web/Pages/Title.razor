@@ -24,9 +24,4 @@
         _poem = await Client.GetTitle(TitleName);
         StateHasChanged();
     }
-
-    private void NavigateToAuthor()
-    {
-        Nav.NavigateTo($"/authors/{_poem.Author}");
-    }
 }
