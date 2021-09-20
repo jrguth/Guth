@@ -1,0 +1,32 @@
+﻿@page "/titles/{titleName}"
+@inject IPoetryDBClient Client
+
+@if(_poem != null)
+{
+    <h1>@TitleName</h1>
+    <a href="@($"/authors/{@_poem.Author}")"><h3>@_poem.Author</h3></a>
+    <p>
+        @foreach(string line in _poem.Lines)
+        {
+            <div>@line</div>
+        }
+    </p>
+}
+
+@code {
+    [Parameter] public string TitleName { get; set; }
+    [Inject] public NavigationManager Nav { get; set; }
+
+    private Poem _poem;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _poem = await Client.GetTitle(TitleName);
+        StateHasChanged();
+    }
+
+    private void NavigateToAuthor()
+    {
+        Nav.NavigateTo($"/authors/{_poem.Author}");
+    }
+}

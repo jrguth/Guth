@@ -1,0 +1,30 @@
+﻿@page "/authors/{authorName}"
+@inject IPoetryDBClient Client
+
+@if(_sortedPoems != null && _sortedPoems.Any())
+{
+    <h1>@AuthorName</h1>
+    @foreach(Poem poem in _sortedPoems)
+    {
+        <div><a href="@($"/titles/{poem.Title}")">@poem.Title</a></div>
+    }
+}
+
+@code {
+    [Parameter] public string AuthorName { get; set; }
+    [Inject] NavigationManager Nav { get; set; }
+
+    private IEnumerable<Poem> _sortedPoems;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _sortedPoems = (await Client.GetTitlesByAuthor(AuthorName))
+            .OrderBy(poem => poem.Title);
+        StateHasChanged();
+    }
+
+    private void NavigateToTitle(string title)
+    {
+        Nav.NavigateTo($"/titles/{title}");
+    }
+}
