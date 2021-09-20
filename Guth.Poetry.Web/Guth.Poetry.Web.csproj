@@ -5,7 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Guth.Autofac\Guth.Autofac.csproj" />
     <ProjectReference Include="..\Guth.PoetryDB\Guth.PoetryDB.csproj" />
   </ItemGroup>
 

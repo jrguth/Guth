@@ -1,7 +1,3 @@
-using System.IO;
-
-using Autofac;
-using Autofac.Extensions.DependencyInjection;
 
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
@@ -13,13 +9,9 @@ namespace Guth.Poetry.Web
         {
             Host
                 .CreateDefaultBuilder(args)
-                .UseServiceProviderFactory(new AutofacServiceProviderFactory())
                 .ConfigureWebHostDefaults(webHostBuilder =>
                 {
-                    webHostBuilder
-                        .UseContentRoot(Directory.GetCurrentDirectory())
-                        .UseIISIntegration()
-                        .UseStartup<Startup>();
+                    webHostBuilder.UseStartup<Startup>();
                 })
                 .Build()
                 .Run();

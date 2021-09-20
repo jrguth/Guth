@@ -1,13 +1,18 @@
 ﻿@page "/randompoems"
 @inject IPoetryDBClient Client
 
-<button onclick="GetRandomPoem">Get Random Poem!</button>
+<button @onclick=GetRandomPoem>Get Random Poem!</button>
 
 @if(_poem != null)
 {
     <h1>@_poem.Title</h1>
     <h4>@_poem.Author</h4>
-    <p>@string.Join("\n", _poem.Lines)</p>
+    <p>
+        @foreach(string line in _poem.Lines)
+        {
+            <div>@line</div>
+        }
+    </p>
 }
 
 @code {
@@ -16,6 +21,7 @@
     private async Task GetRandomPoem()
     {
         _poem = (await Client.GetRandomTitles(1)).First();
+        Console.WriteLine(_poem.Author);
         StateHasChanged();
     }
 }
