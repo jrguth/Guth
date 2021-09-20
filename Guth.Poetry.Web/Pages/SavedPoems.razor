@@ -1,0 +1,27 @@
+﻿@page "/saved"
+
+<h1>Saved Poems</h1>
+@foreach(PoemTitle poem in _savedPoems)
+{
+    <h6>
+        <a href="@($"/titles/{poem.Title}")">@poem.Title</a>
+        <span> by </span>
+        <a href="@($"/authors/{poem.Author.Name}")">@poem.Author.Name</a>
+    </h6>
+}
+
+@code {
+    [Inject] public IDbContextFactory<PoetryContext> ContextFactory { get; set; }
+
+    private IEnumerable<PoemTitle> _savedPoems = Enumerable.Empty<PoemTitle>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        using (var context = ContextFactory.CreateDbContext())
+        {
+            _savedPoems = await context.Titles
+                .Include(t => t.Author)
+                .ToListAsync();
+        }
+    }
+}

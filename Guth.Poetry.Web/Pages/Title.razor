@@ -1,8 +1,10 @@
 ﻿@page "/titles/{titleName}"
 @inject IPoetryDBClient Client
+@inject IJSRuntime JS
 
 @if(_poem != null)
 {
+    <button @onclick=SavePoem>Save this poem</button>
     <h1>@TitleName</h1>
     <a href="@($"/authors/{@_poem.Author}")"><h3>@_poem.Author</h3></a>
     <p>
@@ -16,6 +18,7 @@
 @code {
     [Parameter] public string TitleName { get; set; }
     [Inject] public NavigationManager Nav { get; set; }
+    [Inject] public IDbContextFactory<PoetryContext> ContextFactory { get; set; }
 
     private Poem _poem;
 
@@ -23,5 +26,31 @@
     {
         _poem = await Client.GetTitle(TitleName);
         StateHasChanged();
+    }
+
+    private async Task SavePoem()
+    {
+        using (var context = ContextFactory.CreateDbContext())
+        {
+            var existing = await context.Titles
+                .Where(t => t.Title == _poem.Title)
+                .Where(t => t.Author.Name == _poem.Author)
+                .FirstOrDefaultAsync();
+            if (existing is null)
+            {
+                existing = new PoemTitle
+                {
+                    Title = _poem.Title,
+                    Lines = string.Join("\n", _poem.Lines),
+                    Author = new PoemAuthor
+                    {
+                        Name = _poem.Author
+                    }
+                };
+                await context.AddAsync(existing);
+                await context.SaveChangesAsync();
+            }
+        }
+        await JS.InvokeVoidAsync("alert", "Successfully saved!");
     }
 }

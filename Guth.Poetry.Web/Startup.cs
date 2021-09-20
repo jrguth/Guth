@@ -1,9 +1,11 @@
 
+using Guth.Poetry.Db;
 using Guth.Poetry.Web.Data;
 using Guth.PoetryDB;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -35,6 +37,7 @@ namespace Guth.Poetry.Web
             {
                 options.AddPolicy(POETRYDB_ORIGIN, builder => builder.WithOrigins("https://poetrydb.org"));
             });
+            services.AddDbContextFactory<PoetryContext>(options => options.UseSqlServer(Configuration.GetConnectionString("Default")));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -61,6 +64,14 @@ namespace Guth.Poetry.Web
                 endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
             });
+
+            using (var scope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
+            using (var context = scope.ServiceProvider
+                    .GetRequiredService<IDbContextFactory<PoetryContext>>()
+                    .CreateDbContext())
+            {
+                context.Database.Migrate();
+            }
         }
     }
 }
