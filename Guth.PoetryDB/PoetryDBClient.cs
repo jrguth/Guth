@@ -1,39 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Net.Http.Json;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
-using Guth.PoetryDB.Models;
+using RestSharp;
 
 namespace Guth.PoetryDB
 {
+    public class Poem
+    {
+        public Poem() { }
+        public string Title { get; set; }
+        public string Author { get; set; }
+        public IEnumerable<string> Lines { get; set; }
+    }
     public class PoetryDBClient
     {
-        private readonly Uri _baseUri;
-        private readonly HttpClient _client;
+        private readonly IRestClient _client;
 
-        internal PoetryDBClient(string baseUrl)
+        public PoetryDBClient(IRestClient client)
         {
-            _client = new HttpClient();
-            _baseUri = new Uri(baseUrl);
-
-        public async Task<IEnumerable<Poem>> SearchByAuthorAsync(string author)
-        {
-            var res = await _client.GetFromJsonAsync()
+            _client = client;
         }
 
-        private async Task<T> ReturnIfSuccessful<T>(HttpResponseMessage response)
+        public async Task<IEnumerable<Poem>> GetRandomTitles(int numTitles)
         {
-            response.EnsureSuccessStatusCode();
-            return await response.Content.ReadAsAsync<T>();
+            var req = new RestRequest($"/random/{numTitles}/all.json", Method.GET);
+            return await _client.GetAsync<List<Poem>>(req);
         }
-
-        private HttpRequestMessage GetBaseRequest()
-            => new HttpRequestMessage
-            {
-                Method = HttpMethod.Get,
-                RequestUri = _baseUri
-            };
     }
 }
