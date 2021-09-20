@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Guth.Autofac\Guth.Autofac.csproj" />
+    <ProjectReference Include="..\Guth.PoetryDB\Guth.PoetryDB.csproj" />
+  </ItemGroup>
+
+</Project>
