@@ -4,15 +4,15 @@
 
 @if(_poem != null)
 {
-    <button @onclick=SavePoem>Save this poem</button>
-    <h1>@TitleName</h1>
-    <a href="@($"/authors/{@_poem.Author}")"><h3>@_poem.Author</h3></a>
-    <p>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick=SavePoem>Save this poem</MudButton>
+    <MudText Typo="Typo.subtitle1">@_poem.Title</MudText>
+    <a href="@($"/authors/{_poem.Author}")"><MudText Typo="Typo.overline" Color="Color.Primary">@_poem.Author</MudText></a>
+    <MudText Typo="Typo.body1">
         @foreach(string line in _poem.Lines)
         {
-            <div>@line</div>
+            <MudText Typo="Typo.body2">@line</MudText>
         }
-    </p>
+    </MudText>
 }
 
 @code {

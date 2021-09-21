@@ -1,14 +1,22 @@
 ﻿@page "/saved"
 
-<h1>Saved Poems</h1>
+<MudText Typo="Typo.h3">Saved Poems</MudText>
+<MudGrid>
 @foreach(PoemTitle poem in _savedPoems)
 {
-    <h6>
-        <a href="@($"/titles/{poem.Title}")">@poem.Title</a>
-        <span> by </span>
-        <a href="@($"/authors/{poem.Author.Name}")">@poem.Author.Name</a>
-    </h6>
+    <MudItem xs="6">
+        <MudCard Elevation="12">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudLink Href="@($"/titles/{poem.Title}")">@poem.Title</MudLink>
+                    <MudLink Href="@($"/authors/{poem.Author.Name}")">@poem.Author.Name</MudLink>
+                </CardHeaderContent>
+            </MudCardHeader>
+        </MudCard>
+    </MudItem>
 }
+</MudGrid>
+
 
 @code {
     [Inject] public IDbContextFactory<PoetryContext> ContextFactory { get; set; }

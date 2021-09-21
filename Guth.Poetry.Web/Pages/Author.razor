@@ -3,10 +3,12 @@
 
 @if(_sortedPoems != null && _sortedPoems.Any())
 {
-    <h1>@AuthorName</h1>
+    <MudText Typo="Typo.h3">@AuthorName</MudText>
     @foreach(Poem poem in _sortedPoems)
     {
-        <div><a href="@($"/titles/{poem.Title}")">@poem.Title</a></div>
+        <div>
+            <MudLink Href="@($"/titles/{poem.Title}")" Underline="Underline.Always">@poem.Title</MudLink>
+        </div>
     }
 }
 

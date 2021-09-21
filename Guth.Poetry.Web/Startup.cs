@@ -10,6 +10,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
+using MudBlazor.Services;
+
 using RestSharp;
 
 namespace Guth.Poetry.Web
@@ -38,6 +40,7 @@ namespace Guth.Poetry.Web
                 options.AddPolicy(POETRYDB_ORIGIN, builder => builder.WithOrigins("https://poetrydb.org"));
             });
             services.AddDbContextFactory<PoetryContext>(options => options.UseSqlServer(Configuration.GetConnectionString("Default")));
+            services.AddMudServices();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
