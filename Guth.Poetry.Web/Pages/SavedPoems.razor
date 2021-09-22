@@ -5,8 +5,8 @@
     <MudProgressCircular Color="Color.Secondary" Indeterminate="true" />
 </MudOverlay>
 
-<MudText Class="mb-3" Typo="Typo.h3" Color="Color.Primary">Saved Poems</MudText>
-<MudGrid>
+<MudText Class="mb-3" Typo="Typo.h3" Color="Color.Primary" Align="Align.Center">Saved Poems</MudText>
+<MudGrid Justify="Justify.Center">
 @foreach(Poem poem in _savedPoems)
 {
     <MudItem Style="height: 300px" xs="8" md="6">

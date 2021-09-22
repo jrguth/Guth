@@ -1,8 +1,8 @@
 @inject IPoetryDBClient Client
 <MudCard Style="height: 100%; overflow: auto;" Class="p-1" Elevation="10">
     <MudCardHeader>
-        <MudGrid>
-            <MudItem xs="8">
+        <MudGrid Justify="Justify.FlexStart">
+            <MudItem>
                 <MudText
                     Typo="Typo.h5"
                     Color="Color.Dark">
@@ -16,7 +16,7 @@
                     @Poem.Author
                 </MudLink>
             </MudItem>
-            <MudItem hidden="@IsSaved" xs="2">
+            <MudItem hidden="@IsSaved">
                 <MudIconButton
                     Icon="@Icons.Material.Filled.Add" 
                     Size="Size.Large" 
