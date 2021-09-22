@@ -1,6 +1,7 @@
 
+using Blazored.LocalStorage;
+
 using Guth.Poetry.Db;
-using Guth.Poetry.Web.Data;
 using Guth.PoetryDB;
 
 using Microsoft.AspNetCore.Builder;
@@ -32,7 +33,6 @@ namespace Guth.Poetry.Web
         {
             services.AddRazorPages();
             services.AddServerSideBlazor();
-            services.AddSingleton<WeatherForecastService>();
             services.AddOptions();
             services.AddTransient<IPoetryDBClient>(services => new PoetryDBClient(new RestClient("https://poetrydb.org")));
             services.AddCors(options =>
@@ -41,6 +41,7 @@ namespace Guth.Poetry.Web
             });
             services.AddDbContextFactory<PoetryContext>(options => options.UseSqlServer(Configuration.GetConnectionString("Default")));
             services.AddMudServices();
+            services.AddBlazoredLocalStorage();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -68,14 +69,14 @@ namespace Guth.Poetry.Web
                 endpoints.MapFallbackToPage("/_Host");
             });
 
-            using (var scope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
-            using (var context = scope.ServiceProvider
-                    .GetRequiredService<IDbContextFactory<PoetryContext>>()
-                    .CreateDbContext())
-            {
-                context.Database.Migrate();
-                context.Database.EnsureCreated();
-            }
+            //using (var scope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
+            //using (var context = scope.ServiceProvider
+            //        .GetRequiredService<IDbContextFactory<PoetryContext>>()
+            //        .CreateDbContext())
+            //{
+            //    context.Database.Migrate();
+            //    context.Database.EnsureCreated();
+            //}
         }
     }
 }

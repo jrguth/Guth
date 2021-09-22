@@ -1,6 +1,7 @@
 ﻿@page "/titles/{titleName}"
 @inject IPoetryDBClient Client
 @inject ISnackbar Snackbar
+@inject ILocalStorageService Storage
 
 <MudOverlay Visible="_poem == null">
     <MudProgressCircular Color="Color.Secondary" Indeterminate="true" />
@@ -21,15 +22,12 @@
     [Inject] public IDbContextFactory<PoetryContext> ContextFactory { get; set; }
 
     private Poem _poem;
-    private PoemTitle _cachedPoem;
+    private Poem _cachedPoem;
 
     protected override async Task OnParametersSetAsync()
     {
-        _poem = await Client.GetTitle(TitleName);
-        using (var context = ContextFactory.CreateDbContext())
-        {
-            _cachedPoem = await GetDbTitleAsync(context);
-        }
+        _cachedPoem = await Storage.GetItemAsync<Poem>(TitleName);
+        _poem = _cachedPoem ?? await Client.GetTitle(TitleName);
         StateHasChanged();
     }
 
@@ -44,22 +42,10 @@
 
     private async Task SavePoem()
     {
-        using (PoetryContext context = ContextFactory.CreateDbContext())
+        if (_cachedPoem is null)
         {
-            if (_cachedPoem is null)
-            {
-                _cachedPoem = new PoemTitle
-                {
-                    Title = _poem.Title,
-                    Lines = string.Join("\n", _poem.Lines),
-                    Author = new PoemAuthor
-                    {
-                        Name = _poem.Author
-                    }
-                };
-                await context.AddAsync(_cachedPoem);
-                await context.SaveChangesAsync();
-            }
+            _cachedPoem = _poem;
+            await Storage.SetItemAsync(_cachedPoem.Title, _cachedPoem);
         }
         Snackbar.Add("Saved!", Severity.Success);
     }

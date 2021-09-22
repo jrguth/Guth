@@ -1,4 +1,5 @@
 ﻿@page "/saved"
+@inject ILocalStorageService Storage
 
 <MudOverlay Visible="_loading">
     <MudProgressCircular Color="Color.Secondary" Indeterminate="true" />
@@ -6,11 +7,11 @@
 
 <MudText Class="mb-3" Typo="Typo.h3" Color="Color.Primary">Saved Poems</MudText>
 <MudGrid>
-@foreach(PoemTitle poem in _savedPoems)
+@foreach(Poem poem in _savedPoems)
 {
     <MudItem Style="height: 300px" xs="8" md="6">
         <TitleCard
-                Poem="@(new Poem { Title = poem.Title, Author = poem.Author.Name, Lines = poem.Lines.Split("\n") })"
+                Poem="@poem"
                 IsSaved="true">
             </TitleCard>
     </MudItem>
@@ -21,15 +22,16 @@
 @code {
     [Inject] public IDbContextFactory<PoetryContext> ContextFactory { get; set; }
     private bool _loading = true;
-    private IEnumerable<PoemTitle> _savedPoems = Enumerable.Empty<PoemTitle>();
+    private List<Poem> _savedPoems = new();
 
     protected override async Task OnInitializedAsync()
     {
-        using (var context = ContextFactory.CreateDbContext())
+        int total = await Storage.LengthAsync();
+        for (int i = 0; i < total; i++)
         {
-            _savedPoems = await context.Titles
-                .Include(t => t.Author)
-                .ToListAsync();
+            string key = await Storage.KeyAsync(i);
+            Poem poem = await Storage.GetItemAsync<Poem>(key);
+            _savedPoems.Add(poem);
         }
         _loading = false;
         StateHasChanged();
