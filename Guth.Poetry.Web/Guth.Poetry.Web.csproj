@@ -16,7 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Guth.Poetry.Db\Guth.Poetry.Db.csproj" />
     <ProjectReference Include="..\Guth.PoetryDB\Guth.PoetryDB.csproj" />
   </ItemGroup>
 

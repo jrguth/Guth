@@ -1,7 +1,6 @@
 
 using Blazored.LocalStorage;
 
-using Guth.Poetry.Db;
 using Guth.PoetryDB;
 
 using Microsoft.AspNetCore.Builder;
@@ -39,7 +38,6 @@ namespace Guth.Poetry.Web
             {
                 options.AddPolicy(POETRYDB_ORIGIN, builder => builder.WithOrigins("https://poetrydb.org"));
             });
-            services.AddDbContextFactory<PoetryContext>(options => options.UseSqlServer(Configuration.GetConnectionString("Default")));
             services.AddMudServices();
             services.AddBlazoredLocalStorage();
         }

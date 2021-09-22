@@ -19,7 +19,6 @@
 @code {
     [Parameter] public string TitleName { get; set; }
     [Inject] public NavigationManager Nav { get; set; }
-    [Inject] public IDbContextFactory<PoetryContext> ContextFactory { get; set; }
 
     private Poem _poem;
     private Poem _cachedPoem;
@@ -29,15 +28,6 @@
         _cachedPoem = await Storage.GetItemAsync<Poem>(TitleName);
         _poem = _cachedPoem ?? await Client.GetTitle(TitleName);
         StateHasChanged();
-    }
-
-    private Task<PoemTitle> GetDbTitleAsync(PoetryContext context)
-    {
-        return context.Titles
-                .FirstOrDefaultAsync(pt =>
-                    pt.Title == _poem.Title &&
-                    pt.Author != null &&
-                    pt.Author.Name == _poem.Author);
     }
 
     private async Task SavePoem()
