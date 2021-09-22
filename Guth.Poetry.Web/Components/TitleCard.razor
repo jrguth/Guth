@@ -1,5 +1,5 @@
 @inject IPoetryDBClient Client
-<MudCard Style="width: fit-content" Class="mx-auto" Elevation="10">
+<MudCard Style="height: 100%; overflow: auto" Class="p-3 mx-auto" Elevation="10">
     <MudCardHeader>
         <MudGrid>
             <MudItem xs="10">
@@ -16,19 +16,16 @@
                     @Poem.Author
                 </MudLink>
             </MudItem>
-            <MudItem xs="2">
-                <MudIconButton 
-                    Icon="@Icons.Material.Filled.Add" 
-                    Size="Size.Large" 
-                    Color="Color.Primary"
-                    OnClick="InvokeOnSaveClicked"> Save</MudIconButton>
-                @*<MudCardActions>
+            @if (!IsSaved)
+            {
+                <MudItem xs="2">
                     <MudIconButton 
-                    Icon="Icons.Material.Add" 
-                    Color="Color.Secondary"
-                    OnClick="InvokeOnSaveClicked"></MudIconButton>
-                </MudCardActions>*@
-            </MudItem>
+                        Icon="@Icons.Material.Filled.Add" 
+                        Size="Size.Large" 
+                        Color="Color.Primary"
+                        OnClick="InvokeOnSaveClicked"></MudIconButton>
+                </MudItem>
+            }
         </MudGrid>
     </MudCardHeader>
     <MudDivider></MudDivider>
