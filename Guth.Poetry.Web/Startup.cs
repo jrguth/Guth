@@ -66,15 +66,6 @@ namespace Guth.Poetry.Web
                 endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
             });
-
-            //using (var scope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
-            //using (var context = scope.ServiceProvider
-            //        .GetRequiredService<IDbContextFactory<PoetryContext>>()
-            //        .CreateDbContext())
-            //{
-            //    context.Database.Migrate();
-            //    context.Database.EnsureCreated();
-            //}
         }
     }
 }
