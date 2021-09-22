@@ -1,18 +1,17 @@
 ﻿@page "/titles/{titleName}"
 @inject IPoetryDBClient Client
-@inject IJSRuntime JS
+@inject ISnackbar Snackbar
 
 @if(_poem != null)
 {
-    <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick=SavePoem>Save this poem</MudButton>
-    <MudText Typo="Typo.subtitle1">@_poem.Title</MudText>
-    <a href="@($"/authors/{_poem.Author}")"><MudText Typo="Typo.overline" Color="Color.Primary">@_poem.Author</MudText></a>
-    <MudText Typo="Typo.body1">
-        @foreach(string line in _poem.Lines)
-        {
-            <MudText Typo="Typo.body2">@line</MudText>
-        }
-    </MudText>
+    <MudContainer>
+        <TitleCard
+            Poem="_poem"
+            IsSaved="_cachedPoem != null"
+            OnSaveClicked="SavePoem">  
+        </TitleCard>
+    </MudContainer>
+    
 }
 
 @code {
@@ -21,24 +20,34 @@
     [Inject] public IDbContextFactory<PoetryContext> ContextFactory { get; set; }
 
     private Poem _poem;
+    private PoemTitle _cachedPoem;
 
     protected override async Task OnParametersSetAsync()
     {
         _poem = await Client.GetTitle(TitleName);
+        using (var context = ContextFactory.CreateDbContext())
+        {
+            _cachedPoem = await GetDbTitleAsync(context);
+        }
         StateHasChanged();
+    }
+
+    private Task<PoemTitle> GetDbTitleAsync(PoetryContext context)
+    {
+        return context.Titles
+                .FirstOrDefaultAsync(pt =>
+                    pt.Title == _poem.Title &&
+                    pt.Author != null &&
+                    pt.Author.Name == _poem.Author);
     }
 
     private async Task SavePoem()
     {
-        using (var context = ContextFactory.CreateDbContext())
+        using (PoetryContext context = ContextFactory.CreateDbContext())
         {
-            var existing = await context.Titles
-                .Where(t => t.Title == _poem.Title)
-                .Where(t => t.Author.Name == _poem.Author)
-                .FirstOrDefaultAsync();
-            if (existing is null)
+            if (_cachedPoem is null)
             {
-                existing = new PoemTitle
+                _cachedPoem = new PoemTitle
                 {
                     Title = _poem.Title,
                     Lines = string.Join("\n", _poem.Lines),
@@ -47,10 +56,10 @@
                         Name = _poem.Author
                     }
                 };
-                await context.AddAsync(existing);
+                await context.AddAsync(_cachedPoem);
                 await context.SaveChangesAsync();
             }
         }
-        await JS.InvokeVoidAsync("alert", "Successfully saved!");
+        Snackbar.Add("Saved!", Severity.Success);
     }
 }

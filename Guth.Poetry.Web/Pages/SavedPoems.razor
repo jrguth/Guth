@@ -5,14 +5,10 @@
 @foreach(PoemTitle poem in _savedPoems)
 {
     <MudItem xs="6">
-        <MudCard Elevation="12">
-            <MudCardHeader>
-                <CardHeaderContent>
-                    <MudLink Href="@($"/titles/{poem.Title}")">@poem.Title</MudLink>
-                    <MudLink Href="@($"/authors/{poem.Author.Name}")">@poem.Author.Name</MudLink>
-                </CardHeaderContent>
-            </MudCardHeader>
-        </MudCard>
+        <TitleCard
+            Poem="@(new Poem { Title = poem.Title, Author = poem.Author.Name, Lines = poem.Lines.Split("\n") })"
+            IsSaved="true">
+        </TitleCard>
     </MudItem>
 }
 </MudGrid>

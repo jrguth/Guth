@@ -74,6 +74,7 @@ namespace Guth.Poetry.Web
                     .CreateDbContext())
             {
                 context.Database.Migrate();
+                context.Database.EnsureCreated();
             }
         }
     }

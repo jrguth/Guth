@@ -1,0 +1,49 @@
+@inject IPoetryDBClient Client
+<MudCard Style="width: fit-content" Class="mx-auto" Elevation="10">
+    <MudCardHeader>
+        <MudGrid>
+            <MudItem xs="10">
+                <MudText
+                    Typo="Typo.h5"
+                    Color="Color.Primary">
+                    @Poem.Title
+                </MudText>
+                <MudLink 
+                    Typo="Typo.h6" 
+                    Color="Color.Secondary" 
+                    Underline="Underline.Always"
+                    Href="@($"/authors/{Poem.Author}")">
+                    @Poem.Author
+                </MudLink>
+            </MudItem>
+            <MudItem xs="2">
+                <MudIconButton 
+                    Icon="@Icons.Material.Filled.Add" 
+                    Size="Size.Large" 
+                    Color="Color.Primary"
+                    OnClick="InvokeOnSaveClicked"> Save</MudIconButton>
+                @*<MudCardActions>
+                    <MudIconButton 
+                    Icon="Icons.Material.Add" 
+                    Color="Color.Secondary"
+                    OnClick="InvokeOnSaveClicked"></MudIconButton>
+                </MudCardActions>*@
+            </MudItem>
+        </MudGrid>
+    </MudCardHeader>
+    <MudDivider></MudDivider>
+    <MudCardContent>
+    @foreach(string line in @Poem.Lines)
+    {
+        <MudText Typo="Typo.body1">@line</MudText>
+    }
+    </MudCardContent>
+</MudCard>
+
+@code {
+    [Parameter] public Poem Poem { get; set; }
+    [Parameter] public bool IsSaved { get; set; }
+    [Parameter] public EventCallback<Poem> OnSaveClicked { get; set; }
+
+    private void InvokeOnSaveClicked() => OnSaveClicked.InvokeAsync(Poem);
+}
