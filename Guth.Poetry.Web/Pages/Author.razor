@@ -1,15 +1,20 @@
 ﻿@page "/authors/{authorName}"
 @inject IPoetryDBClient Client
 
+<MudOverlay Visible="_sortedPoems == null">
+    <MudProgressCircular Color="Color.Secondary" Indeterminate="true" />
+</MudOverlay>
 @if(_sortedPoems != null && _sortedPoems.Any())
 {
-    <MudText Typo="Typo.h3">@AuthorName</MudText>
+    <MudText Typo="Typo.h3" Align="Align.Center" Color="Color.Primary">@AuthorName</MudText>
+    <MudGrid>
     @foreach(Poem poem in _sortedPoems)
     {
-        <div>
-            <MudLink Href="@($"/titles/{poem.Title}")" Underline="Underline.Always">@poem.Title</MudLink>
-        </div>
+        <MudItem Style="height: 300px" xs="8" md="6">
+            <TitleCard Poem="poem"></TitleCard>
+        </MudItem>
     }
+    </MudGrid>
 }
 
 @code {

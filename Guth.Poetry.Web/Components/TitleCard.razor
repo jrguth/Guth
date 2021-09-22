@@ -1,34 +1,32 @@
 @inject IPoetryDBClient Client
-<MudCard Style="height: 100%; overflow: auto" Class="p-3 mx-auto" Elevation="10">
+<MudCard Style="height: 100%; overflow: auto;" Class="p-1" Elevation="10">
     <MudCardHeader>
         <MudGrid>
-            <MudItem xs="10">
+            <MudItem xs="8">
                 <MudText
                     Typo="Typo.h5"
-                    Color="Color.Primary">
+                    Color="Color.Dark">
                     @Poem.Title
                 </MudText>
                 <MudLink 
                     Typo="Typo.h6" 
-                    Color="Color.Secondary" 
+                    Color="Color.Primary" 
                     Underline="Underline.Always"
                     Href="@($"/authors/{Poem.Author}")">
                     @Poem.Author
                 </MudLink>
             </MudItem>
-            @if (!IsSaved)
-            {
-                <MudItem xs="2">
-                    <MudIconButton 
-                        Icon="@Icons.Material.Filled.Add" 
-                        Size="Size.Large" 
-                        Color="Color.Primary"
-                        OnClick="InvokeOnSaveClicked"></MudIconButton>
-                </MudItem>
-            }
+            <MudItem hidden="@IsSaved" xs="2">
+                <MudIconButton
+                    Icon="@Icons.Material.Filled.Add" 
+                    Size="Size.Large" 
+                    Color="Color.Primary"
+                    OnClick="InvokeOnSaveClicked">
+                </MudIconButton> 
+            </MudItem>
         </MudGrid>
     </MudCardHeader>
-    <MudDivider></MudDivider>
+    <MudDivider Light="false"></MudDivider>
     <MudCardContent>
     @foreach(string line in @Poem.Lines)
     {

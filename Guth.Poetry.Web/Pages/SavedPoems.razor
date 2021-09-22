@@ -1,10 +1,14 @@
 ﻿@page "/saved"
 
-<MudText Typo="Typo.h3">Saved Poems</MudText>
+<MudOverlay Visible="_loading">
+    <MudProgressCircular Color="Color.Secondary" Indeterminate="true" />
+</MudOverlay>
+
+<MudText Class="mb-3" Typo="Typo.h3" Color="Color.Primary">Saved Poems</MudText>
 <MudGrid>
 @foreach(PoemTitle poem in _savedPoems)
 {
-    <MudItem Style="height: 300px" xs="6">
+    <MudItem Style="height: 300px" xs="8" md="6">
         <TitleCard
                 Poem="@(new Poem { Title = poem.Title, Author = poem.Author.Name, Lines = poem.Lines.Split("\n") })"
                 IsSaved="true">
@@ -16,7 +20,7 @@
 
 @code {
     [Inject] public IDbContextFactory<PoetryContext> ContextFactory { get; set; }
-
+    private bool _loading = true;
     private IEnumerable<PoemTitle> _savedPoems = Enumerable.Empty<PoemTitle>();
 
     protected override async Task OnInitializedAsync()
@@ -27,5 +31,7 @@
                 .Include(t => t.Author)
                 .ToListAsync();
         }
+        _loading = false;
+        StateHasChanged();
     }
 }

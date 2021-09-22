@@ -2,16 +2,17 @@
 @inject IPoetryDBClient Client
 @inject ISnackbar Snackbar
 
+<MudOverlay Visible="_poem == null">
+    <MudProgressCircular Color="Color.Secondary" Indeterminate="true" />
+</MudOverlay>
+
 @if(_poem != null)
 {
-    <MudContainer>
-        <TitleCard
-            Poem="_poem"
-            IsSaved="_cachedPoem != null"
-            OnSaveClicked="SavePoem">  
-        </TitleCard>
-    </MudContainer>
-    
+    <TitleCard
+        Poem="_poem"
+        IsSaved="_cachedPoem != null"
+        OnSaveClicked="SavePoem">  
+    </TitleCard>
 }
 
 @code {

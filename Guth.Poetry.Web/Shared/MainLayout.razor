@@ -1,45 +1,59 @@
 ﻿@inherits LayoutComponentBase
+@inject IPoetryDBClient Client
 
-<MudThemeProvider/>
+<MudThemeProvider Theme="currentTheme"/>
 <MudDialogProvider/>
 <MudSnackbarProvider/>
 
 <MudLayout>
-    <MudAppBar>
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
-        Yay Poetry!
+    <MudAppBar Elevation="10">
+        <MudButton Variant="Variant.Text">
+            <MudLink Href="/">Home</MudLink>
+        </MudButton>
+        <MudButton Variant="Variant.Text">
+            <MudLink Href="/saved">Saved</MudLink>
+        </MudButton>
+        <MudButton OnClick=NavigateToRandomPoem Variant="Variant.Text">
+            <MudLink>Random</MudLink>
+        </MudButton>
     </MudAppBar>
-    <MudDrawer @bind-open="@_drawerOpen">
-        <NavMenu />
-    </MudDrawer>
     <MudMainContent>
-        <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pa-2">
+        <MudContainer Class="p-4">
             @Body
         </MudContainer>
     </MudMainContent>
 </MudLayout>
 
 @code {
+    [Inject] NavigationManager Nav { get; set; }
     bool _drawerOpen = false;
+    MudTheme currentTheme;
 
-@*    MudTheme MyCustomTheme = new MudTheme()
+    MudTheme DefaultTheme = new MudTheme()
     {
         Palette = new Palette()
         {
-            Primary = Colors.Blue.Default,
-            Secondary = Colors.Green.Accent4,
-            AppbarBackground = Colors.Red.Default,
-        },
-
-        LayoutProperties = new LayoutProperties()
-        {
-            DrawerWidthLeft = "260px",
-            DrawerWidthRight = "300px"
+            Primary = Colors.Purple.Darken4,
+            Secondary = "#bbf8e3",
+            Background = Colors.Pink.Lighten4,
+            AppbarBackground = "#bbf8e3",
+            Surface = "#bbf8e3"
         }
-    };*@
+    };
+
+    protected override void OnInitialized()
+    {
+        currentTheme = DefaultTheme;
+    }
 
     void DrawerToggle()
     {
         _drawerOpen = !_drawerOpen;
+    }
+
+    private async Task NavigateToRandomPoem()
+    {
+        Poem poem = (await Client.GetRandomTitles(1)).First();
+        Nav.NavigateTo($"/titles/{poem.Title}");
     }
 }

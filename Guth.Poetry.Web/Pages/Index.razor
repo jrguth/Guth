@@ -1,3 +1,26 @@
 ﻿@page "/"
+@inject IPoetryDBClient Client
+@inject NavigationManager Nav
 
-<MudText Typo="Typo.h1">Welcome to Poetry!</MudText>
+<MudGrid>
+    <MudItem xs="12">
+        <MudText Color="Color.Primary" Typo="Typo.h3" Align="Align.Center">Welcome to the best poetry site on the planet</MudText>
+    </MudItem>
+    <MudItem xs="12" Class="d-flex justify-center">
+        <MudButton Class="m-2" Variant="Variant.Outlined" Color="Color.Primary">
+            <MudLink Underline="Underline.None" Color="Color.Primary" Href="/saved">My Poems</MudLink>
+        </MudButton>
+            <MudButton Class= "m-2" OnClick=NavigateToRandomPoem Variant="Variant.Outlined" Color="Color.Primary">
+            <MudLink Underline="Underline.None" Color="Color.Primary">Random Poem</MudLink>
+        </MudButton>
+    </MudItem>
+</MudGrid>
+
+@code {
+    private async Task NavigateToRandomPoem()
+    {
+        Poem poem = (await Client.GetRandomTitles(1)).First();
+        Nav.NavigateTo($"/titles/{poem.Title}");
+    }
+}
+
