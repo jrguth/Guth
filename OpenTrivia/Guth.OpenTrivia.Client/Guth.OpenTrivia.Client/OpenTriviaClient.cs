@@ -28,7 +28,7 @@ namespace Guth.OpenTrivia.Client
 
         private async Task<TResponse> Execute<TResponse>(OpenTriviaRequest<TResponse> request)
         {
-            IRestResponse response = await _client.ExecuteAsync(request.Request);
+            RestResponse response = await _client.ExecuteAsync(request.Request);
             if (!response.IsSuccessful)
             {
                 throw new Exception(null, response.ErrorException);

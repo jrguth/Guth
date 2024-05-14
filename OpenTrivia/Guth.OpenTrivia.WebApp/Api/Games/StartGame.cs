@@ -9,9 +9,9 @@ using System.Collections.Immutable;
 
 namespace Guth.OpenTrivia.WebApp.Api.Games
 {
-    public class StartGame : BaseAsyncEndpoint
+    public class StartGame : EndpointBaseAsync
         .WithRequest<StartGameCommand>
-        .WithResponse<Game>
+        .WithActionResult<Game>
     {
         private readonly TriviaRealtimeDB _db;
         private readonly IOpenTriviaClient _openTriviaClient;

@@ -9,9 +9,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Guth.OpenTrivia.WebApp.Api.ConnectionCodes
 {
-    public class CreateConnectionCode : BaseAsyncEndpoint
+    public class CreateConnectionCode : EndpointBaseAsync
         .WithoutRequest
-        .WithResponse<ConnectionCode>
+        .WithResult<ConnectionCode>
     {
         private readonly TriviaRealtimeDB _db;
 
@@ -21,7 +21,7 @@ namespace Guth.OpenTrivia.WebApp.Api.ConnectionCodes
         }
 
         [HttpPost("/api/v1/connectioncodes")]
-        public override async Task<ActionResult<ConnectionCode>> HandleAsync(CancellationToken cancellationToken = default)
+        public override async Task<ConnectionCode> HandleAsync(CancellationToken cancellationToken = default)
             => await _db.GenerateConnectionCode(cancellationToken);
     }
 }

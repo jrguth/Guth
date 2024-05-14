@@ -41,19 +41,19 @@ namespace Guth.OpenTrivia.WebApp
             services.AddMudServices();
             services.AddSingleton<IOpenTriviaClient, OpenTriviaClient>();
             services.AddTriviaDB(Configuration["Firebase:Url"], Configuration["Firebase:AppSecret"]);
-            services.AddHangfire(configuration => configuration
-                .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
-                .UseSimpleAssemblyNameTypeSerializer()
-                .UseRecommendedSerializerSettings()
-                .UseSqlServerStorage(Configuration.GetConnectionString("HangfireConnection"), new SqlServerStorageOptions
-                {
-                    CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
-                    SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
-                    QueuePollInterval = TimeSpan.Zero,
-                    UseRecommendedIsolationLevel = true,
-                    DisableGlobalLocks = true
-                }));
-            services.AddHangfireServer();
+            // services.AddHangfire(configuration => configuration
+            //     .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+            //     .UseSimpleAssemblyNameTypeSerializer()
+            //     .UseRecommendedSerializerSettings()
+            //     .UseSqlServerStorage(Configuration.GetConnectionString("HangfireConnection"), new SqlServerStorageOptions
+            //     {
+            //         CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+            //         SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+            //         QueuePollInterval = TimeSpan.Zero,
+            //         UseRecommendedIsolationLevel = true,
+            //         DisableGlobalLocks = true
+            //     }));
+            // services.AddHangfireServer();
             services.AddHttpClient("BaseApiClient", c => c.BaseAddress = new Uri(Configuration["Urls:BaseUrl"]));
             services.AddControllers().AddNewtonsoftJson(options => options.SerializerSettings.Converters.Add(new StringEnumConverter()));
             services.AddSwaggerGen(c =>
@@ -92,13 +92,13 @@ namespace Guth.OpenTrivia.WebApp
 
             app.UseMvcWithDefaultRoute();
             app.UseRouting();
-            app.UseHangfireDashboard();
+            // app.UseHangfireDashboard();
             app.UseSwagger();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
-                endpoints.MapHangfireDashboard();
+                // endpoints.MapHangfireDashboard();
                 endpoints.MapSwagger();
             });
         }

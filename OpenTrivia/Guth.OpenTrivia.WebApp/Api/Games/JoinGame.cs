@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace Guth.OpenTrivia.WebApp.Api.Games
 {
-    public class JoinGame : BaseAsyncEndpoint
+    public class JoinGame : EndpointBaseAsync
         .WithRequest<JoinGameCommand>
-        .WithResponse<Game>
+        .WithResult<Game>
     {
         private readonly TriviaRealtimeDB _db;
 
@@ -19,7 +19,7 @@ namespace Guth.OpenTrivia.WebApp.Api.Games
         }
 
         [HttpPost("/api/v1/games/{gameId}/join")]
-        public override async Task<ActionResult<Game>> HandleAsync([FromQuery][FromRoute] JoinGameCommand request, CancellationToken cancellationToken = default)
+        public override async Task<Game> HandleAsync([FromQuery][FromRoute] JoinGameCommand request, CancellationToken cancellationToken = default)
         {
             ConnectionCode connection = await _db.GetConnectionCode(request.ConnectionCode);
             await _db.AddPlayerToGame(connection.GameId, request.PlayerId);

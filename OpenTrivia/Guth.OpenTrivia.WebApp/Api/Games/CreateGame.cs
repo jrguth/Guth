@@ -14,9 +14,9 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace Guth.OpenTrivia.WebApp.Api.Games
 {
-    public class CreateGame : BaseAsyncEndpoint
+    public class CreateGame : EndpointBaseAsync
         .WithRequest<CreateGameCommand>
-        .WithResponse<Game>
+        .WithResult<Game>
     {
         private readonly TriviaRealtimeDB _db;
 
@@ -29,7 +29,7 @@ namespace Guth.OpenTrivia.WebApp.Api.Games
         [SwaggerOperation(
             Summary = "Create a game",
             Description = "Create a game")]
-        public override async Task<ActionResult<Game>> HandleAsync([FromQuery][FromBody] CreateGameCommand request, CancellationToken cancellationToken = default)
+        public override async Task<Game> HandleAsync([FromQuery][FromBody] CreateGameCommand request, CancellationToken cancellationToken = default)
         {
             ConnectionCode connection = await _db.GenerateConnectionCode(cancellationToken);
             return await _db.CreateGame(connection.Code, request.PlayerId, request.Options);

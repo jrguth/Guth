@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Guth.OpenTrivia.WebApp.Api.ConnectionCodes
 {
-    public class GetConnectionCode : BaseAsyncEndpoint
+    public class GetConnectionCode : EndpointBaseAsync
         .WithRequest<GetConnectionCodeCommand>
-        .WithResponse<ConnectionCode>
+        .WithActionResult<ConnectionCode>
     {
         private readonly TriviaRealtimeDB _db;
 
