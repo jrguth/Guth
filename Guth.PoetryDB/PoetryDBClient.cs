@@ -17,13 +17,13 @@ namespace Guth.PoetryDB
 
         public async Task<IEnumerable<Poem>> GetRandomTitles(int numTitles)
         {
-            var req = new RestRequest($"/random/{numTitles}/all.json", Method.GET);
+            var req = new RestRequest($"/random/{numTitles}/all.json", Method.Get);
             return await _client.GetAsync<List<Poem>>(req);
         }
 
         public async Task<IEnumerable<Poem>> GetTitlesByAuthor(string author)
         {
-            var req = new RestRequest($"/author/{author}/all.json", Method.GET);
+            var req = new RestRequest($"/author/{author}/all.json", Method.Get);
             return await _client.GetAsync<List<Poem>>(req);
         }
 
